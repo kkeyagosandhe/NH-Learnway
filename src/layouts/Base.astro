@@ -1,0 +1,88 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  total?: number; // milestones on the trail, for the progress meter
+}
+const { title = 'NH-Learnway', total = 27 } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-total={total}>
+    <header class="bar-wrap">
+      <div class="bar">
+        <a class="brand" href="/">
+          <h1>NH-LEARNWAY</h1>
+          <p>your highway to solid fundamentals · at your pace · for George</p>
+        </a>
+        <div class="meter">
+          <div class="meter-top">
+            <span class="rank" id="rank">Standing at the trailhead</span>
+            <span class="count" id="count">0 / {total} lit</span>
+          </div>
+          <div class="track"><div class="fill" id="fill"></div></div>
+        </div>
+        <div class="actions">
+          <a class="chip" href="/guide">Field guide</a>
+          <button class="chip" id="resetBtn" type="button">Reset</button>
+        </div>
+      </div>
+    </header>
+
+    <slot />
+
+    <canvas id="confetti"></canvas>
+
+    <script>
+      import { loadDone, reset } from '../scripts/progress';
+
+      const total = Number(document.body.dataset.total || '27');
+      const fill = document.getElementById('fill');
+      const count = document.getElementById('count');
+      const rank = document.getElementById('rank');
+
+      function rankFor(p: number): string {
+        if (p <= 0) return 'Standing at the trailhead';
+        if (p < 15) return 'Getting unstuck';
+        if (p < 35) return 'Building momentum';
+        if (p < 60) return 'On a roll';
+        if (p < 85) return 'Deep in it';
+        if (p < 100) return 'Almost home';
+        return 'Summited';
+      }
+
+      function refresh(): void {
+        const c = loadDone().length;
+        const p = Math.round((c / total) * 100);
+        if (fill) fill.style.width = p + '%';
+        if (count) count.textContent = c + ' / ' + total + ' lit';
+        if (rank) rank.textContent = rankFor(p);
+      }
+
+      document.getElementById('resetBtn')?.addEventListener('click', () => {
+        if (window.confirm('Reset all progress on the path? This cannot be undone.')) {
+          reset();
+          window.dispatchEvent(new CustomEvent('progress-changed'));
+        }
+      });
+
+      // Update on load, on any local change, and across tabs.
+      refresh();
+      window.addEventListener('progress-changed', refresh);
+      window.addEventListener('storage', refresh);
+    </script>
+  </body>
+</html>

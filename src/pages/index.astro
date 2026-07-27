@@ -1,0 +1,334 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { CHAPTERS } from '../data/chapters';
+
+const milestones = (await getCollection('milestones')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const total = milestones.length;
+---
+
+<Base title="NH-Learnway" total={total}>
+  <main>
+    <p class="lede">
+      A winding trail of <b>{total} milestones</b>. No dates, no daily quota. Tap a
+      checkpoint, do the thing, mark it lit. The trail fills as you climb. The only
+      rules: <b>one tiny rep a day</b>, <b>one active project</b>, <b>never miss twice</b>.
+    </p>
+
+    <div id="trail">
+      <svg id="wires" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="litGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F5B841" />
+            <stop offset="0.32" stop-color="#34D9A8" />
+            <stop offset="0.58" stop-color="#46B4F0" />
+            <stop offset="0.78" stop-color="#B57BEE" />
+            <stop offset="1" stop-color="#FB7793" />
+          </linearGradient>
+        </defs>
+        <path id="wireDim" fill="none" stroke="var(--line-dim)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 12"></path>
+        <path id="wireLit" fill="none" stroke="url(#litGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+
+      {
+        milestones.map((m, i) => {
+          const ch = CHAPTERS[m.data.chapter];
+          const isChapterStart = i === 0 || milestones[i - 1].data.chapter !== m.data.chapter;
+          return (
+            <div class="row">
+              {isChapterStart && (
+                <div class="chapter-flag" style={`--chip:${ch.chip};--chip-ink:${ch.ink}`}>
+                  <span class="num">{ch.n}</span>
+                  <span class="nm">{ch.name}</span>
+                  <span class="tg">{ch.tag}</span>
+                </div>
+              )}
+              <div class="node-wrap" data-slug={m.id}>
+                <a
+                  class="node"
+                  href={`/path/${m.id}`}
+                  style={`--hue:${ch.hue}`}
+                  data-i={i}
+                  data-slug={m.id}
+                  aria-label={m.data.title}
+                >
+                  <span class="ring" />
+                  <span class="lbl">{i + 1}</span>
+                </a>
+                <div class="caption">{m.data.title}</div>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  </main>
+
+  <script>
+    import { loadDone } from '../scripts/progress';
+
+    const trail = document.getElementById('trail')!;
+    const svg = document.getElementById('wires') as unknown as SVGSVGElement;
+    const dimP = document.getElementById('wireDim') as unknown as SVGPathElement;
+    const litP = document.getElementById('wireLit') as unknown as SVGPathElement;
+    const nodes = Array.from(trail.querySelectorAll<HTMLAnchorElement>('.node'));
+    const wraps = Array.from(trail.querySelectorAll<HTMLElement>('.node-wrap'));
+    const slugs = nodes.map((n) => n.dataset.slug!);
+    const TOTAL = nodes.length;
+
+    function amp(): number {
+      return trail.clientWidth < 520 ? 0.3 : 0.4;
+    }
+    function wrapW(): number {
+      return trail.clientWidth < 560 ? 120 : 150;
+    }
+
+    function layout(): void {
+      const a = amp();
+      const ww = wrapW();
+      wraps.forEach((wrap, i) => {
+        const x = 0.5 + a * Math.sin(i * 0.92);
+        wrap.style.marginLeft = 'calc(' + x.toFixed(4) + ' * (100% - ' + ww + 'px))';
+      });
+      drawWires();
+    }
+
+    function centers() {
+      const base = trail.getBoundingClientRect();
+      return nodes.map((n) => {
+        const r = n.getBoundingClientRect();
+        return { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
+      });
+    }
+
+    function smooth(pts: { x: number; y: number }[]): string {
+      if (pts.length < 2) return '';
+      let d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[i + 2] || p2;
+        const c1x = p1.x + (p2.x - p0.x) / 6;
+        const c1y = p1.y + (p2.y - p0.y) / 6;
+        const c2x = p2.x - (p3.x - p1.x) / 6;
+        const c2y = p2.y - (p3.y - p1.y) / 6;
+        d += ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ' ' + p2.x.toFixed(1) + ' ' + p2.y.toFixed(1);
+      }
+      return d;
+    }
+
+    function furthestDone(done: string[]): number {
+      let m = -1;
+      slugs.forEach((s, i) => {
+        if (done.indexOf(s) !== -1 && i > m) m = i;
+      });
+      return m;
+    }
+
+    function drawWires(): void {
+      const W = trail.clientWidth;
+      const H = trail.clientHeight;
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      svg.setAttribute('width', String(W));
+      svg.setAttribute('height', String(H));
+      const d = smooth(centers());
+      dimP.setAttribute('d', d);
+      litP.setAttribute('d', d);
+      const len = litP.getTotalLength ? litP.getTotalLength() : 1000;
+      const f = furthestDone(loadDone());
+      const frac = f <= 0 ? 0 : f / (TOTAL - 1);
+      litP.style.strokeDasharray = String(len);
+      litP.style.transition = 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)';
+      litP.style.strokeDashoffset = String(len * (1 - frac));
+    }
+
+    function nextIndex(done: string[]): number {
+      for (let i = 0; i < TOTAL; i++) {
+        if (done.indexOf(slugs[i]) === -1) return i;
+      }
+      return -1;
+    }
+
+    const CHECK = '<svg class="check" viewBox="0 0 24 24"><path d="M4 12.5 L10 18 L20 6"/></svg>';
+
+    function refreshNodes(): void {
+      const done = loadDone();
+      const nx = nextIndex(done);
+      const anyDone = furthestDone(done) >= 0;
+      nodes.forEach((b, i) => {
+        const wrap = wraps[i];
+        b.classList.remove('done', 'next');
+        wrap.classList.remove('is-done');
+        wrap.querySelector('.pin')?.remove();
+        const lbl = b.querySelector('.lbl')!;
+        if (done.indexOf(slugs[i]) !== -1) {
+          b.classList.add('done');
+          wrap.classList.add('is-done');
+          lbl.innerHTML = CHECK;
+        } else {
+          lbl.textContent = String(i + 1);
+          if (i === nx) {
+            b.classList.add('next');
+            const pin = document.createElement('div');
+            pin.className = 'pin';
+            pin.textContent = anyDone ? 'you are here' : 'start here';
+            wrap.appendChild(pin);
+          }
+        }
+      });
+    }
+
+    function render(): void {
+      refreshNodes();
+      drawWires();
+    }
+
+    let rt: number | undefined;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = window.setTimeout(() => layout(), 120);
+    });
+    window.addEventListener('progress-changed', render);
+    window.addEventListener('storage', render);
+
+    function boot(): void {
+      layout();
+      render();
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(boot);
+      setTimeout(boot, 400);
+    } else {
+      boot();
+    }
+  </script>
+
+  <style>
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 36px 16px 120px;
+    }
+    .lede {
+      text-align: center;
+      margin: 6px auto 30px;
+      max-width: 520px;
+      color: var(--ink-soft);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .lede b { color: var(--ink); font-weight: 800; }
+    #trail { position: relative; width: 100%; }
+    #wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+    .row { position: relative; height: var(--gap); display: flex; align-items: center; z-index: 2; }
+    .chapter-flag {
+      position: absolute;
+      top: -6px;
+      left: 0;
+      transform: translateY(-100%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chapter-flag .num {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--chip-ink, #151024);
+      background: var(--chip, #fff);
+      border-radius: 8px;
+      padding: 3px 8px;
+      line-height: 1;
+    }
+    .chapter-flag .nm { font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--ink); }
+    .chapter-flag .tg { font-size: 12px; color: var(--ink-faint); font-weight: 700; }
+
+    .node-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; }
+    .pin {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: #151024;
+      background: var(--ink);
+      padding: 3px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    }
+    .pin::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 9px;
+      height: 9px;
+      background: var(--ink);
+    }
+    .node {
+      width: var(--node);
+      height: var(--node);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      position: relative;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 20px;
+      border: 0;
+      padding: 0;
+      text-decoration: none;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
+      background: var(--trail-dim);
+      color: var(--ink-faint);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+    }
+    .node:hover { transform: translateY(-4px) scale(1.04); }
+    .node:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+    .node .ring { position: absolute; inset: -6px; border-radius: 50%; border: 2px solid transparent; transition: 0.25s; }
+    .node.done {
+      color: #151024;
+      background: radial-gradient(circle at 30% 28%, #fff6, transparent 55%), var(--hue);
+      box-shadow: 0 10px 26px -6px var(--hue), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+    }
+    .node.next {
+      background: var(--night-2);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 2px var(--hue), 0 0 0 0 var(--hue);
+    }
+    .node.next .ring { border-color: var(--hue); animation: pulse 1.9s ease-out infinite; }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      70% { transform: scale(1.5); opacity: 0; }
+      100% { opacity: 0; }
+    }
+    .check { width: 26px; height: 26px; stroke: #151024; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .caption {
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      max-width: 100%;
+      line-height: 1.25;
+      color: var(--ink-soft);
+    }
+    .node-wrap.is-done .caption { color: var(--ink); }
+
+    @media (max-width: 560px) {
+      .node-wrap { width: 120px; }
+      .caption { font-size: 12px; }
+      .chapter-flag .nm { font-size: 15px; }
+    }
+  </style>
+</Base>

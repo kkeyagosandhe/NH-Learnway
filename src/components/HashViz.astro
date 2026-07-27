@@ -1,0 +1,111 @@
+<!-- Interactive hash-map demo: type a word, watch it hash to a slot and land there. -->
+<div class="hv">
+  <p class="hv-note">Type any word. Watch it become a slot number and jump straight there.</p>
+  <div class="hv-in">
+    <input id="hvKey" maxlength="14" placeholder="e.g. george" />
+    <button type="button" id="hvGo">hash it</button>
+  </div>
+  <div class="hv-buckets" id="hvBuckets"></div>
+</div>
+
+<script>
+  const buckets = document.getElementById('hvBuckets');
+  if (buckets) {
+    const N = 8;
+    const store: Record<number, string[]> = {};
+    const hash = (w: string): number => {
+      let sum = 0;
+      for (let k = 0; k < w.length; k++) sum += w.charCodeAt(k);
+      return sum % N;
+    };
+    const draw = (hit: number): void => {
+      let h = '';
+      for (let s = 0; s < N; s++) {
+        const tags = (store[s] || []).map((w) => "<div class='hv-tag'>" + w + '</div>').join('');
+        h += "<div class='hv-b" + (s === hit ? ' hit' : '') + "'><div class='n'>" + s + '</div>' + tags + '</div>';
+      }
+      buckets.innerHTML = h;
+    };
+    const go = (): void => {
+      const inp = document.getElementById('hvKey') as HTMLInputElement | null;
+      if (!inp) return;
+      const w = (inp.value || '').trim().toLowerCase();
+      if (!w) return;
+      const slot = hash(w);
+      if (!store[slot]) store[slot] = [];
+      if (store[slot].indexOf(w) === -1) store[slot].push(w);
+      draw(slot);
+      inp.value = '';
+    };
+    ['cat', 'dog', 'tea'].forEach((w) => {
+      const s = hash(w);
+      if (!store[s]) store[s] = [];
+      if (store[s].indexOf(w) === -1) store[s].push(w);
+    });
+    draw(-1);
+    document.getElementById('hvGo')?.addEventListener('click', go);
+    document.getElementById('hvKey')?.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Enter') {
+        e.preventDefault();
+        go();
+      }
+    });
+  }
+</script>
+
+<style>
+  .hv-note { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 10px; text-align: center; }
+  .hv-in { display: flex; gap: 8px; margin-bottom: 12px; }
+  .hv-in input {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9px;
+    padding: 9px 11px;
+    color: var(--ink);
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .hv-in input:focus { outline: 2px solid var(--hue, #46b4f0); outline-offset: 1px; }
+  .hv-in button {
+    border: 0;
+    border-radius: 9px;
+    padding: 0 14px;
+    background: var(--hue, #fff);
+    color: #151024;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .hv-buckets { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  :global(.hv-b) {
+    min-height: 54px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: transform 0.25s, background 0.25s;
+  }
+  :global(.hv-b .n) { font-size: 10px; font-weight: 800; color: var(--ink-faint); text-align: center; }
+  :global(.hv-b.hit) { background: var(--hue, #46b4f0); border-color: transparent; transform: translateY(-4px); }
+  :global(.hv-b.hit .n) { color: #151024; }
+  :global(.hv-tag) {
+    font-size: 10px;
+    font-weight: 800;
+    background: #0b0817;
+    color: var(--ink);
+    border-radius: 5px;
+    padding: 2px 3px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :global(.hv-b.hit .hv-tag) { background: rgba(0, 0, 0, 0.28); color: #fff; }
+</style>

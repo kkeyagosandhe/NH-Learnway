@@ -1,0 +1,612 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import HashViz from '../../components/HashViz.astro';
+import { CHAPTERS } from '../../data/chapters';
+
+export async function getStaticPaths() {
+  const all = (await getCollection('milestones')).sort(
+    (a, b) => a.data.order - b.data.order,
+  );
+  return all.map((m, i) => ({
+    params: { slug: m.id },
+    props: {
+      m,
+      index: i,
+      total: all.length,
+      prev: i > 0 ? { slug: all[i - 1].id, title: all[i - 1].data.title } : null,
+      next: i < all.length - 1 ? { slug: all[i + 1].id, title: all[i + 1].data.title } : null,
+    },
+  }));
+}
+
+interface Props {
+  m: CollectionEntry<'milestones'>;
+  index: number;
+  total: number;
+  prev: { slug: string; title: string } | null;
+  next: { slug: string; title: string } | null;
+}
+
+const { m, index, total, prev, next } = Astro.props;
+const d = m.data;
+const ch = CHAPTERS[d.chapter];
+
+const dots = (n: number) => '●'.repeat(n) + '○'.repeat(5 - n);
+
+const hasBasics = !!d.problem;
+const hasAnalogy = !!(d.analogy || d.viz || d.intuition);
+const hasUsage = !!(d.real && d.real.length);
+const hasLangLogic = !!(d.prereqs || d.toolkit || d.walkthrough || d.code || d.build);
+---
+
+<Base title={`${d.title} · NH-Learnway`} total={total}>
+  <main style={`--hue:${ch.hue}`}>
+    <nav class="crumbs">
+      <a href="/" class="back">← The trail</a>
+      <span class="pos">{index + 1} / {total}</span>
+    </nav>
+
+    <header class="hero">
+      <div class="eyebrow" style={`color:${ch.hue}`}>
+        <span class="badge" style={`background:${ch.hue};color:${ch.ink}`}>{index + 1}</span>
+        {ch.name} · {ch.tag}
+      </div>
+      <h1>{d.title}</h1>
+
+      <div class="do">
+        <div class="lab">Do this</div>
+        <p>{d.do}</p>
+      </div>
+      <p class="why">{d.why}</p>
+
+      {
+        d.meta && (
+          <div class="meta">
+            {d.meta.interview != null && (
+              <span class="mchip">Interview <span class="mdots">{dots(d.meta.interview)}</span></span>
+            )}
+            {d.meta.realWorld != null && (
+              <span class="mchip">Real world <span class="mdots">{dots(d.meta.realWorld)}</span></span>
+            )}
+            {d.meta.time && <span class="mchip">Time <b>{d.meta.time}</b></span>}
+            {d.meta.unlocks && <span class="mchip">Unlocks <b>{d.meta.unlocks}</b></span>}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      hasBasics && (
+        <section class="part">
+          <div class="part-head"><span class="pnum">1</span> The basics</div>
+          <p class="prose">{d.problem}</p>
+        </section>
+      )
+    }
+
+    {
+      hasAnalogy && (
+        <section class="part">
+          <div class="part-head"><span class="pnum">2</span> The analogy</div>
+          {d.analogy && <p class="prose">{d.analogy}</p>}
+          {d.viz === 'hashmap' && <HashViz />}
+          {d.intuition && (
+            <>
+              <div class="sub">Why it works</div>
+              <p class="prose">{d.intuition}</p>
+            </>
+          )}
+        </section>
+      )
+    }
+
+    {
+      hasUsage && (
+        <section class="part">
+          <div class="part-head"><span class="pnum">3</span> Where it lives in real systems</div>
+          <ul class="real">{d.real!.map((r) => <li>{r}</li>)}</ul>
+        </section>
+      )
+    }
+
+    {
+      hasLangLogic && (
+        <section class="part">
+          <div class="part-head"><span class="pnum">4</span> The language &amp; logic</div>
+
+          {d.prereqs && d.prereqs.length > 0 && (
+            <>
+              <div class="sub">Before this clicks, be comfortable with</div>
+              <ul class="prereqs">{d.prereqs.map((p) => <li>{p}</li>)}</ul>
+            </>
+          )}
+
+          {d.toolkit && d.toolkit.length > 0 && (
+            <>
+              <div class="sub">The toolkit — what each piece does</div>
+              <dl class="toolkit">
+                {d.toolkit.map((t) => (
+                  <div class="tk-row">
+                    <dt><code>{t.code}</code></dt>
+                    <dd>{t.does}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
+
+          {d.walkthrough && d.walkthrough.length > 0 && (
+            <>
+              <div class="sub">How you actually write it</div>
+              <ol class="walk">{d.walkthrough.map((w) => <li>{w}</li>)}</ol>
+            </>
+          )}
+
+          {d.code && (
+            <div class="reveal-code">
+              <button type="button" class="reveal-btn" id="codeBtn">Show the worked solution</button>
+              <pre class="code" id="codeBlock" hidden><code>{d.code}</code></pre>
+            </div>
+          )}
+
+          {d.build && (
+            <>
+              <div class="sub">Build it (tiny)</div>
+              <p class="prose">{d.build}</p>
+            </>
+          )}
+        </section>
+      )
+    }
+
+    {
+      d.interview && (
+        <section class="part slim">
+          <div class="sub">In an interview</div>
+          <p class="prose">{d.interview}</p>
+        </section>
+      )
+    }
+
+    {
+      d.practice && d.practice.length > 0 && (
+        <section class="part slim">
+          <div class="sub">Practice — only after the above clicks</div>
+          <div class="chiplinks">
+            {d.practice.map((p) => (
+              <a href={p.url} target="_blank" rel="noopener">{p.label}</a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.connects && d.connects.length > 0 && (
+        <section class="part slim">
+          <div class="sub">Connects to</div>
+          <div class="chiplinks">
+            {d.connects.map((c) => (
+              <a href={`/path/${c.slug}`}>{c.label} →</a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.check && (
+        <section class="part slim">
+          <div class="sub">Quick check</div>
+          <p class="prose">{d.check.q}</p>
+          <div class="reveal">
+            <button type="button" class="reveal-btn" id="checkBtn">Reveal the instinct</button>
+            <div class="ans" id="checkAns" hidden>{d.check.a}</div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.reflect && (
+        <section class="part slim">
+          <div class="sub">Your reflection</div>
+          <p class="prose">{d.reflect}</p>
+          <textarea id="reflectBox" placeholder="Write it in your own words..."></textarea>
+          <div class="saved" id="reflectSaved">saved</div>
+        </section>
+      )
+    }
+
+    {
+      d.links && d.links.length > 0 && (
+        <section class="part slim">
+          <div class="sub">Go</div>
+          <div class="links">
+            {d.links.map((l) => (
+              <a href={l.url} target="_blank" rel="noopener">
+                <span>{l.label}</span><span class="arw">→</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.meta?.confidence && (
+        <p class="confidence"><b>You'll know you've got it when</b> {d.meta.confidence}</p>
+      )
+    }
+
+    <nav class="pager">
+      {prev ? <a href={`/path/${prev.slug}`} class="pg prev"><span>← Previous</span><b>{prev.title}</b></a> : <span></span>}
+      {next ? <a href={`/path/${next.slug}`} class="pg next"><span>Next →</span><b>{next.title}</b></a> : <span></span>}
+    </nav>
+  </main>
+
+  <div class="lit-bar" style={`--hue:${ch.hue}`}>
+    <button type="button" id="litToggle" data-slug={m.id} data-chip={ch.chip}></button>
+  </div>
+
+  <script>
+    import { isDone, toggle } from '../../scripts/progress';
+    import { burst } from '../../scripts/confetti';
+
+    // --- code reveal ---
+    const codeBtn = document.getElementById('codeBtn');
+    codeBtn?.addEventListener('click', () => {
+      document.getElementById('codeBlock')?.removeAttribute('hidden');
+      codeBtn.style.display = 'none';
+    });
+
+    // --- quick-check reveal ---
+    const checkBtn = document.getElementById('checkBtn');
+    checkBtn?.addEventListener('click', () => {
+      document.getElementById('checkAns')?.removeAttribute('hidden');
+      checkBtn.style.display = 'none';
+    });
+
+    // --- reflection (persisted per milestone) ---
+    const tb = document.getElementById('reflectBox') as HTMLTextAreaElement | null;
+    if (tb) {
+      const slug = (document.getElementById('litToggle') as HTMLElement)?.dataset.slug || '';
+      const rk = 'thepath_reflect_' + slug;
+      try {
+        tb.value = window.localStorage.getItem(rk) || '';
+      } catch {}
+      let t: number | undefined;
+      tb.addEventListener('input', () => {
+        try {
+          window.localStorage.setItem(rk, tb.value);
+        } catch {}
+        const sv = document.getElementById('reflectSaved');
+        if (sv) {
+          sv.classList.add('on');
+          clearTimeout(t);
+          t = window.setTimeout(() => sv.classList.remove('on'), 900);
+        }
+      });
+    }
+
+    // --- mark as lit ---
+    const btn = document.getElementById('litToggle') as HTMLButtonElement | null;
+    if (btn) {
+      const slug = btn.dataset.slug!;
+      const chip = btn.dataset.chip || '#fff';
+      const paint = () => {
+        const lit = isDone(slug);
+        btn.textContent = lit ? 'Lit ✓ — mark as not done' : 'Mark this lit';
+        btn.classList.toggle('undo', lit);
+      };
+      paint();
+      btn.addEventListener('click', () => {
+        const nowLit = toggle(slug);
+        paint();
+        window.dispatchEvent(new CustomEvent('progress-changed'));
+        if (nowLit) {
+          const r = btn.getBoundingClientRect();
+          burst(r.left + r.width / 2, r.top + r.height / 2, chip);
+        }
+      });
+    }
+  </script>
+
+  <style>
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 28px 18px 140px;
+    }
+    .crumbs { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back { text-decoration: none; color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+    .back:hover { color: var(--ink); }
+    .pos { font-size: 12px; color: var(--ink-faint); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    .hero { margin-bottom: 10px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 15px;
+    }
+    h1 { font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1.12; margin: 12px 0 18px; }
+
+    .do {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-left: 3px solid var(--hue);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .lab { font-size: 12px; font-weight: 800; letter-spacing: 0.05em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 6px; }
+    .do p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--ink); }
+    .why { font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); font-style: italic; margin: 14px 2px 0; }
+
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+    .mchip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .mchip b { color: var(--ink); font-weight: 800; }
+    .mdots { letter-spacing: 1px; color: var(--hue); font-size: 11px; }
+
+    .part {
+      margin-top: 30px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .part.slim { margin-top: 22px; padding-top: 18px; }
+    .part-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+    .pnum {
+      flex: 0 0 auto;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: var(--hue);
+      color: #151024;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .sub {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      margin: 20px 0 8px;
+    }
+    .prose { font-size: 15.5px; line-height: 1.65; color: var(--ink-soft); margin: 0 0 10px; }
+    .prose:last-child { margin-bottom: 0; }
+
+    ul.real, ul.prereqs { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+    ul.real li, ul.prereqs li { font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+    ul.prereqs li::marker { color: var(--hue); }
+
+    dl.toolkit { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+    .tk-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 42%) 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tk-row dt { margin: 0; }
+    .tk-row dt code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      color: #d8d2ee;
+      background: #0b0817;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      padding: 3px 7px;
+      display: inline-block;
+      word-break: break-word;
+    }
+    .tk-row dd { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+
+    ol.walk { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    ol.walk li { font-size: 15px; line-height: 1.55; color: var(--ink); padding-left: 4px; }
+    ol.walk li::marker { color: var(--hue); font-weight: 800; }
+
+    .reveal-btn {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ink);
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 9px;
+      padding: 9px 13px;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+    .reveal-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    pre.code {
+      background: #0b0817;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 14px 16px;
+      overflow: auto;
+      margin: 12px 0 0;
+    }
+    pre.code code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #d8d2ee;
+      white-space: pre;
+      display: block;
+    }
+
+    .chiplinks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chiplinks a {
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 9px;
+      padding: 8px 11px;
+      transition: 0.15s;
+    }
+    .chiplinks a:hover { background: rgba(255, 255, 255, 0.12); }
+
+    .reveal .ans {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(52, 217, 168, 0.09);
+      border: 1px solid rgba(52, 217, 168, 0.25);
+      color: var(--ink);
+      font-size: 14.5px;
+      line-height: 1.55;
+    }
+
+    #reflectBox {
+      width: 100%;
+      min-height: 78px;
+      resize: vertical;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--ink);
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #reflectBox:focus { outline: 2px solid var(--hue); outline-offset: 1px; }
+    .saved { font-size: 12px; color: var(--mint); font-weight: 700; margin-top: 6px; opacity: 0; transition: 0.2s; }
+    .saved.on { opacity: 1; }
+
+    .links { display: flex; flex-direction: column; gap: 8px; }
+    .links a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 11px;
+      padding: 11px 14px;
+      transition: 0.15s;
+    }
+    .links a:hover { background: rgba(255, 255, 255, 0.11); transform: translateX(2px); }
+    .links a .arw { color: var(--hue); font-weight: 800; }
+
+    .confidence {
+      margin-top: 26px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+    }
+    .confidence b { color: var(--ink); }
+
+    .pager { display: flex; justify-content: space-between; gap: 14px; margin-top: 40px; }
+    .pg {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: 0.15s;
+    }
+    .pg:hover { background: rgba(255, 255, 255, 0.09); }
+    .pg span { font-size: 12px; color: var(--ink-faint); font-weight: 700; }
+    .pg b { font-size: 14px; color: var(--ink); font-weight: 700; }
+    .pg.next { text-align: right; }
+
+    .lit-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(6, 4, 12, 0), rgba(6, 4, 12, 0.92) 40%);
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .lit-bar button {
+      pointer-events: auto;
+      width: min(680px, 100%);
+      border: 0;
+      cursor: pointer;
+      border-radius: 13px;
+      padding: 15px;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 16px;
+      color: #151024;
+      background: var(--hue);
+      box-shadow: 0 10px 24px -8px var(--hue);
+      transition: 0.18s;
+    }
+    .lit-bar button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .lit-bar button.undo {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink-soft);
+      box-shadow: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .lit-bar button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+    @media (max-width: 560px) {
+      h1 { font-size: 25px; }
+      .tk-row { grid-template-columns: 1fr; gap: 5px; }
+      .pager { flex-direction: column; }
+    }
+  </style>
+</Base>

@@ -118,11 +118,24 @@ build:
     - Key lookup
     - Frequency counting
   out: A CLI phonebook.
+video:
+  label: "NeetCode: Two Sum (free video + walkthrough)"
+  url: https://neetcode.io/solutions/two-sum
 practice:
   - label: Two Sum
     url: https://leetcode.com/problems/two-sum/
+    star: true
   - label: Valid Anagram
     url: https://leetcode.com/problems/valid-anagram/
+    star: true
+  - label: Group Anagrams
+    url: https://leetcode.com/problems/group-anagrams/
+    star: true
+  - label: Top K Frequent Elements
+    url: https://leetcode.com/problems/top-k-frequent-elements/
+    star: true
+  - label: Longest Consecutive Sequence
+    url: https://leetcode.com/problems/longest-consecutive-sequence/
 complexity:
   - op: Access
     val: O(1)

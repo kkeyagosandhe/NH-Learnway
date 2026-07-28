@@ -106,11 +106,23 @@ build:
     - Two pointers
     - In-place logic
   out: A CLI palindrome checker.
+video:
+  label: "NeetCode: 3Sum (free video + walkthrough)"
+  url: https://neetcode.io/solutions/3sum
 practice:
   - label: Valid Palindrome
     url: https://leetcode.com/problems/valid-palindrome/
+    star: true
   - label: Two Sum II - Input Array Is Sorted
     url: https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/
+  - label: 3Sum
+    url: https://leetcode.com/problems/3sum/
+    star: true
+  - label: Container With Most Water
+    url: https://leetcode.com/problems/container-with-most-water/
+    star: true
+  - label: Trapping Rain Water
+    url: https://leetcode.com/problems/trapping-rain-water/
 complexity:
   - op: Time
     val: O(n)

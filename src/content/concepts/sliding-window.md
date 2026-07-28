@@ -114,11 +114,23 @@ build:
     - Sliding window
     - Counting
   out: A CLI rate limiter.
+video:
+  label: "NeetCode: Longest Substring Without Repeating Characters (free video)"
+  url: https://neetcode.io/solutions/longest-substring-without-repeating-characters
 practice:
   - label: Best Time to Buy and Sell Stock
     url: https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
   - label: Longest Substring Without Repeating Characters
     url: https://leetcode.com/problems/longest-substring-without-repeating-characters/
+    star: true
+  - label: Longest Repeating Character Replacement
+    url: https://leetcode.com/problems/longest-repeating-character-replacement/
+    star: true
+  - label: Permutation in String
+    url: https://leetcode.com/problems/permutation-in-string/
+  - label: Minimum Window Substring
+    url: https://leetcode.com/problems/minimum-window-substring/
+    star: true
 complexity:
   - op: Time
     val: O(n)

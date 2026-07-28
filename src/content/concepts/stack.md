@@ -108,11 +108,24 @@ build:
     - Stack
     - LIFO logic
   out: A CLI editor with undo and redo.
+video:
+  label: "NeetCode: Valid Parentheses (free video + walkthrough)"
+  url: https://neetcode.io/solutions/valid-parentheses
 practice:
   - label: Valid Parentheses
     url: https://leetcode.com/problems/valid-parentheses/
+    star: true
   - label: Min Stack
     url: https://leetcode.com/problems/min-stack/
+    star: true
+  - label: Evaluate Reverse Polish Notation
+    url: https://leetcode.com/problems/evaluate-reverse-polish-notation/
+    star: true
+  - label: Daily Temperatures
+    url: https://leetcode.com/problems/daily-temperatures/
+    star: true
+  - label: Largest Rectangle in Histogram
+    url: https://leetcode.com/problems/largest-rectangle-in-histogram/
 complexity:
   - op: Access
     val: O(n)

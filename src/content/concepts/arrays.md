@@ -130,11 +130,24 @@ build:
     - Iteration
     - Insert and remove costs
   out: A working CLI to-do list.
+video:
+  label: "NeetCode: Best Time to Buy and Sell Stock (free video + walkthrough)"
+  url: https://neetcode.io/solutions/best-time-to-buy-and-sell-stock
 practice:
   - label: Contains Duplicate
     url: https://leetcode.com/problems/contains-duplicate/
+    star: true
   - label: Best Time to Buy and Sell Stock
     url: https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
+    star: true
+  - label: Product of Array Except Self
+    url: https://leetcode.com/problems/product-of-array-except-self/
+    star: true
+  - label: Maximum Subarray
+    url: https://leetcode.com/problems/maximum-subarray/
+    star: true
+  - label: Merge Sorted Array
+    url: https://leetcode.com/problems/merge-sorted-array/
 complexity:
   - op: Access
     val: O(1)

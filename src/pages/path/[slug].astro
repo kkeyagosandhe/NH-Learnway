@@ -264,6 +264,7 @@ const ch = CHAPTERS[d.chapter];
         btn.classList.toggle('undo', done);
       };
       paint();
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       btn.addEventListener('click', () => {
         const nowDone = toggle(slug);
         paint();
@@ -271,6 +272,10 @@ const ch = CHAPTERS[d.chapter];
         if (nowDone) {
           const r = btn.getBoundingClientRect();
           burst(r.left + r.width / 2, r.top + r.height / 2, chip);
+          // celebrate, then glide back to the map to watch the car drive on
+          btn.textContent = 'Learned ✓ — back to the map…';
+          btn.disabled = true;
+          window.setTimeout(() => { window.location.href = '/'; }, reduce ? 250 : 1050);
         }
       });
     }

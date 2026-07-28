@@ -101,11 +101,22 @@ build:
     - Recursion
     - Base cases
   out: A CLI recursive folder walker.
+video:
+  label: "NeetCode: Pow(x, n) (recursion, divide & conquer)"
+  url: https://neetcode.io/solutions/powx-n
 practice:
   - label: Fibonacci Number
     url: https://leetcode.com/problems/fibonacci-number/
+    star: true
   - label: Pow(x, n)
     url: https://leetcode.com/problems/powx-n/
+    star: true
+  - label: Reverse Linked List
+    url: https://leetcode.com/problems/reverse-linked-list/
+  - label: Merge Two Sorted Lists
+    url: https://leetcode.com/problems/merge-two-sorted-lists/
+  - label: Sort an Array
+    url: https://leetcode.com/problems/sort-an-array/
 complexity:
   - op: Time
     val: varies

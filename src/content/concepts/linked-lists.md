@@ -105,11 +105,24 @@ build:
     - Linked list
     - Pointers
   out: A CLI playlist.
+video:
+  label: "NeetCode: Reverse Linked List (free video + walkthrough)"
+  url: https://neetcode.io/solutions/reverse-linked-list
 practice:
   - label: Reverse Linked List
     url: https://leetcode.com/problems/reverse-linked-list/
+    star: true
   - label: Merge Two Sorted Lists
     url: https://leetcode.com/problems/merge-two-sorted-lists/
+    star: true
+  - label: Linked List Cycle
+    url: https://leetcode.com/problems/linked-list-cycle/
+    star: true
+  - label: Remove Nth Node From End of List
+    url: https://leetcode.com/problems/remove-nth-node-from-end-of-list/
+    star: true
+  - label: Reorder List
+    url: https://leetcode.com/problems/reorder-list/
 complexity:
   - op: Access
     val: O(n)

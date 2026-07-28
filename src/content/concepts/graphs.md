@@ -113,11 +113,25 @@ build:
     - BFS
     - Visited set
   out: A CLI maze solver.
+video:
+  label: "NeetCode: Number of Islands (BFS / DFS on a grid)"
+  url: https://neetcode.io/solutions/number-of-islands
 practice:
   - label: Number of Islands
     url: https://leetcode.com/problems/number-of-islands/
+    star: true
   - label: Clone Graph
     url: https://leetcode.com/problems/clone-graph/
+    star: true
+  - label: Course Schedule
+    url: https://leetcode.com/problems/course-schedule/
+    star: true
+  - label: Pacific Atlantic Water Flow
+    url: https://leetcode.com/problems/pacific-atlantic-water-flow/
+    star: true
+  - label: Rotting Oranges
+    url: https://leetcode.com/problems/rotting-oranges/
+    star: true
 complexity:
   - op: Add vertex
     val: O(1)

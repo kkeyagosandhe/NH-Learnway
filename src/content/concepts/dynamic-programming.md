@@ -112,11 +112,25 @@ build:
     - Memoization
     - Recurrence
   out: A CLI that shows the speed difference.
+video:
+  label: "NeetCode: Climbing Stairs (the gateway DP problem)"
+  url: https://neetcode.io/solutions/climbing-stairs
 practice:
   - label: Climbing Stairs
     url: https://leetcode.com/problems/climbing-stairs/
+    star: true
   - label: House Robber
     url: https://leetcode.com/problems/house-robber/
+    star: true
+  - label: Coin Change
+    url: https://leetcode.com/problems/coin-change/
+    star: true
+  - label: Longest Increasing Subsequence
+    url: https://leetcode.com/problems/longest-increasing-subsequence/
+    star: true
+  - label: Word Break
+    url: https://leetcode.com/problems/word-break/
+    star: true
 complexity:
   - op: Time
     val: O(states × work)

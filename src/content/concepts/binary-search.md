@@ -107,11 +107,25 @@ build:
     - Binary search
     - Boundaries
   out: A CLI guess-the-number solver.
+video:
+  label: "NeetCode: Binary Search (free video + walkthrough)"
+  url: https://neetcode.io/solutions/binary-search
 practice:
   - label: Binary Search
     url: https://leetcode.com/problems/binary-search/
+    star: true
   - label: Search a 2D Matrix
     url: https://leetcode.com/problems/search-a-2d-matrix/
+    star: true
+  - label: Koko Eating Bananas
+    url: https://leetcode.com/problems/koko-eating-bananas/
+    star: true
+  - label: Find Minimum in Rotated Sorted Array
+    url: https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/
+    star: true
+  - label: Search in Rotated Sorted Array
+    url: https://leetcode.com/problems/search-in-rotated-sorted-array/
+    star: true
 complexity:
   - op: Time
     val: O(log n)

@@ -121,11 +121,23 @@ build:
     - Trie
     - Prefix search
   out: A CLI autocomplete.
+video:
+  label: "NeetCode: Implement Trie (Prefix Tree) (free video + walkthrough)"
+  url: https://neetcode.io/solutions/implement-trie-prefix-tree
 practice:
   - label: Implement Trie (Prefix Tree)
     url: https://leetcode.com/problems/implement-trie-prefix-tree/
+    star: true
   - label: Design Add and Search Words Data Structure
     url: https://leetcode.com/problems/design-add-and-search-words-data-structure/
+    star: true
+  - label: Word Search II
+    url: https://leetcode.com/problems/word-search-ii/
+    star: true
+  - label: Replace Words
+    url: https://leetcode.com/problems/replace-words/
+  - label: Longest Word in Dictionary
+    url: https://leetcode.com/problems/longest-word-in-dictionary/
 complexity:
   - op: Access
     val: O(L)

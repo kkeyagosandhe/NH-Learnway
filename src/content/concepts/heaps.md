@@ -103,11 +103,25 @@ build:
     - Priority queue
     - heapq
   out: A CLI priority task runner.
+video:
+  label: "NeetCode: Last Stone Weight (heap / priority queue)"
+  url: https://neetcode.io/solutions/last-stone-weight
 practice:
-  - label: Kth Largest Element in a Stream
-    url: https://leetcode.com/problems/kth-largest-element-in-a-stream/
   - label: Last Stone Weight
     url: https://leetcode.com/problems/last-stone-weight/
+    star: true
+  - label: Kth Largest Element in a Stream
+    url: https://leetcode.com/problems/kth-largest-element-in-a-stream/
+    star: true
+  - label: K Closest Points to Origin
+    url: https://leetcode.com/problems/k-closest-points-to-origin/
+    star: true
+  - label: Kth Largest Element in an Array
+    url: https://leetcode.com/problems/kth-largest-element-in-an-array/
+    star: true
+  - label: Find Median from Data Stream
+    url: https://leetcode.com/problems/find-median-from-data-stream/
+    star: true
 complexity:
   - op: Access
     val: O(1)

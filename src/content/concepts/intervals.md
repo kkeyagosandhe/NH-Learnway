@@ -103,11 +103,23 @@ build:
     - Sorting
     - Sweep
   out: A CLI calendar merger.
+video:
+  label: "NeetCode: Merge Intervals (sort, then sweep)"
+  url: https://neetcode.io/solutions/merge-intervals
 practice:
   - label: Merge Intervals
     url: https://leetcode.com/problems/merge-intervals/
+    star: true
   - label: Insert Interval
     url: https://leetcode.com/problems/insert-interval/
+    star: true
+  - label: Non-overlapping Intervals
+    url: https://leetcode.com/problems/non-overlapping-intervals/
+    star: true
+  - label: Interval List Intersections
+    url: https://leetcode.com/problems/interval-list-intersections/
+  - label: Minimum Number of Arrows to Burst Balloons
+    url: https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/
 complexity:
   - op: Time
     val: O(n log n)

@@ -111,11 +111,22 @@ build:
     - FIFO logic
     - deque
   out: A CLI print queue simulator.
+video:
+  label: "NeetCode: Binary Tree Level Order Traversal (BFS with a queue)"
+  url: https://neetcode.io/solutions/binary-tree-level-order-traversal
 practice:
   - label: Implement Queue using Stacks
     url: https://leetcode.com/problems/implement-queue-using-stacks/
   - label: Number of Recent Calls
     url: https://leetcode.com/problems/number-of-recent-calls/
+  - label: Binary Tree Level Order Traversal
+    url: https://leetcode.com/problems/binary-tree-level-order-traversal/
+    star: true
+  - label: Rotting Oranges
+    url: https://leetcode.com/problems/rotting-oranges/
+    star: true
+  - label: Design Circular Queue
+    url: https://leetcode.com/problems/design-circular-queue/
 complexity:
   - op: Access
     val: O(n)

@@ -109,11 +109,24 @@ build:
     - Recursion
     - Choose and undo
   out: A CLI permutation generator.
+video:
+  label: "NeetCode: Subsets (backtracking: choose / explore / un-choose)"
+  url: https://neetcode.io/solutions/subsets
 practice:
   - label: Subsets
     url: https://leetcode.com/problems/subsets/
+    star: true
   - label: Combination Sum
     url: https://leetcode.com/problems/combination-sum/
+    star: true
+  - label: Permutations
+    url: https://leetcode.com/problems/permutations/
+    star: true
+  - label: Word Search
+    url: https://leetcode.com/problems/word-search/
+    star: true
+  - label: Palindrome Partitioning
+    url: https://leetcode.com/problems/palindrome-partitioning/
 complexity:
   - op: Time
     val: O(b^d)

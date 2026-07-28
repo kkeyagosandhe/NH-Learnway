@@ -104,11 +104,25 @@ build:
     - Recursion
     - Traversal
   out: A CLI directory-tree printer.
+video:
+  label: "NeetCode: Invert Binary Tree (free video + walkthrough)"
+  url: https://neetcode.io/solutions/invert-binary-tree
 practice:
   - label: Invert Binary Tree
     url: https://leetcode.com/problems/invert-binary-tree/
+    star: true
   - label: Maximum Depth of Binary Tree
     url: https://leetcode.com/problems/maximum-depth-of-binary-tree/
+    star: true
+  - label: Binary Tree Level Order Traversal
+    url: https://leetcode.com/problems/binary-tree-level-order-traversal/
+    star: true
+  - label: Validate Binary Search Tree
+    url: https://leetcode.com/problems/validate-binary-search-tree/
+    star: true
+  - label: Lowest Common Ancestor of a BST
+    url: https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/
+    star: true
 complexity:
   - op: Access
     val: O(log n)

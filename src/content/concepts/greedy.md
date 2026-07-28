@@ -102,11 +102,24 @@ build:
     - Greedy
     - Optimization
   out: A CLI change maker.
+video:
+  label: "NeetCode: Jump Game (greedy)"
+  url: https://neetcode.io/solutions/jump-game
 practice:
   - label: Maximum Subarray
     url: https://leetcode.com/problems/maximum-subarray/
+    star: true
   - label: Jump Game
     url: https://leetcode.com/problems/jump-game/
+    star: true
+  - label: Jump Game II
+    url: https://leetcode.com/problems/jump-game-ii/
+    star: true
+  - label: Gas Station
+    url: https://leetcode.com/problems/gas-station/
+    star: true
+  - label: Hand of Straights
+    url: https://leetcode.com/problems/hand-of-straights/
 complexity:
   - op: Time
     val: O(n log n)

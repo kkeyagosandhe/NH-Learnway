@@ -101,11 +101,24 @@ build:
     - XOR
     - Shifts
   out: A CLI bit inspector.
+video:
+  label: "NeetCode: Single Number (XOR bit trick)"
+  url: https://neetcode.io/solutions/single-number
 practice:
   - label: Single Number
     url: https://leetcode.com/problems/single-number/
+    star: true
   - label: Number of 1 Bits
     url: https://leetcode.com/problems/number-of-1-bits/
+    star: true
+  - label: Counting Bits
+    url: https://leetcode.com/problems/counting-bits/
+    star: true
+  - label: Reverse Bits
+    url: https://leetcode.com/problems/reverse-bits/
+  - label: Missing Number
+    url: https://leetcode.com/problems/missing-number/
+    star: true
 complexity:
   - op: Time
     val: O(1)

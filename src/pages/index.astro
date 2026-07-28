@@ -176,7 +176,7 @@ const total = concepts.length;
     let carLen = 0; // the car's position measured as a length along the road
     let lastFace = 1; // 1 = facing right, -1 = facing left
     let raf = 0;
-    const SEEN_KEY = 'nhlearnway_carseen';
+    const SEEN_KEY = 'nhlearnway_carseen_v2';
 
     function pathLen(): number {
       return roadLit.getTotalLength ? roadLit.getTotalLength() : 0;
@@ -250,35 +250,47 @@ const total = concepts.length;
       try { window.localStorage.setItem(SEEN_KEY, String(currentCarIndex())); } catch (e) {}
     }
 
+    // Reflect current progress, driving the car FROM the last-seen sign (or the very
+    // start on a first visit) TO the current one — so returning after learning a
+    // concept actually shows the car move.
+    function catchUp(): void {
+      const carIndex = currentCarIndex();
+      refreshStates(carIndex);
+      let seen: number | null = null;
+      try {
+        const raw = window.localStorage.getItem(SEEN_KEY);
+        if (raw !== null) { const n = parseInt(raw, 10); if (!isNaN(n)) seen = n; }
+      } catch (e) {}
+      const from = seen === null ? 0 : seen; // first visit: drive up from the start
+      if (!reduce && from < carIndex) {
+        place(lenForIndex(from));
+        driveTo(lenForIndex(carIndex));
+      } else {
+        place(lenForIndex(carIndex));
+      }
+      saveSeen();
+    }
+
+    function boot(): void {
+      layout(); // build the road + position the signs
+      catchUp(); // then place or drive the car
+    }
+
     let rt: number | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(rt);
-      rt = window.setTimeout(layout, 120); // layout re-places the car instantly, no drive
+      rt = window.setTimeout(layout, 120); // re-place instantly on resize, no drive
     });
     window.addEventListener('progress-changed', () => { applyProgress(true); saveSeen(); });
     window.addEventListener('storage', () => { applyProgress(true); saveSeen(); });
+    // the browser Back button can restore from bfcache without re-running the script,
+    // so re-run the catch-up drive when the page is shown from cache.
+    window.addEventListener('pageshow', (e) => {
+      if ((e as PageTransitionEvent).persisted) boot();
+    });
 
-    function boot(): void {
-      layout(); // builds the road + places the car at the current sign instantly
-      // if you've made progress since last visiting the map, watch the car catch up
-      try {
-        const raw = window.localStorage.getItem(SEEN_KEY);
-        const seen = raw === null ? null : parseInt(raw, 10);
-        const carIndex = currentCarIndex();
-        if (seen !== null && !isNaN(seen) && seen < carIndex && !reduce) {
-          refreshStates(carIndex);
-          place(lenForIndex(seen)); // start from where the car was last seen
-          driveTo(lenForIndex(carIndex)); // and drive forward to now
-        }
-      } catch (e) {}
-      saveSeen();
-    }
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(boot);
-      setTimeout(boot, 450);
-    } else {
-      boot();
-    }
+    // one startup, once — the double-boot was what cancelled the drive
+    requestAnimationFrame(boot);
   </script>
 
   <style>

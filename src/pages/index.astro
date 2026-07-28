@@ -149,7 +149,7 @@ const total = concepts.length;
       svg.setAttribute('height', String(H));
       [roadEdge, roadFill, roadLine, roadLit].forEach((p) => p.setAttribute('d', d));
 
-      render();
+      applyProgress(false);
     }
 
     function nearestLen(pt: { x: number; y: number }): number {
@@ -172,46 +172,106 @@ const total = concepts.length;
       return best;
     }
 
-    function render(): void {
-      const done = loadDone();
-      // furthest completed index, and the next one to do
-      let furthest = -1;
-      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) !== -1 && i > furthest) furthest = i;
-      let next = -1;
-      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) === -1) { next = i; break; }
-      const carIndex = next === -1 ? N - 1 : next;
+    // --- the car drives ALONG the road path (getPointAtLength), not in a straight line ---
+    let carLen = 0; // the car's position measured as a length along the road
+    let lastFace = 1; // 1 = facing right, -1 = facing left
+    let raf = 0;
+    const SEEN_KEY = 'nhlearnway_carseen';
 
-      signs.forEach((s, i) => {
-        const isDone = done.indexOf(slugs[i]) !== -1;
-        s.classList.toggle('done', isDone);
-        s.classList.toggle('next', i === carIndex && next !== -1);
-      });
+    function pathLen(): number {
+      return roadLit.getTotalLength ? roadLit.getTotalLength() : 0;
+    }
 
-      // drive the car to its sign
-      const p = pos[carIndex];
-      if (p) {
-        car.style.transform =
-          `translate(${p.x}px, ${p.y}px) translate(-50%, -50%) scaleX(${p.dir})`;
-      }
-
-      // light the road up to the car
-      const total = roadLit.getTotalLength ? roadLit.getTotalLength() : 0;
-      const litLen = furthest < 0 ? 0 : nearestLen(pos[carIndex]);
+    // put the car (and the lit road) at a given length along the path
+    function place(len: number): void {
+      const total = pathLen();
+      const L = Math.max(0, Math.min(len, total));
+      carLen = L;
+      const p = roadLit.getPointAtLength(L);
+      const ahead = roadLit.getPointAtLength(Math.min(L + 3, total));
+      const dx = ahead.x - p.x;
+      if (dx > 0.05) lastFace = 1;
+      else if (dx < -0.05) lastFace = -1;
+      car.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%) scaleX(${lastFace})`;
       roadLit.style.strokeDasharray = String(total);
-      roadLit.style.transition = reduce ? 'none' : 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)';
-      roadLit.style.strokeDashoffset = String(total - litLen);
+      roadLit.style.strokeDashoffset = String(total - L);
+    }
+
+    function currentCarIndex(): number {
+      const done = loadDone();
+      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) === -1) return i;
+      return N - 1; // everything learned
+    }
+
+    function lenForIndex(i: number): number {
+      if (i <= 0 && loadDone().length === 0) return 0;
+      return nearestLen(pos[i]);
+    }
+
+    function refreshStates(carIndex: number): void {
+      const done = loadDone();
+      const hasNext = done.length < N;
+      signs.forEach((s, i) => {
+        s.classList.toggle('done', done.indexOf(slugs[i]) !== -1);
+        s.classList.toggle('next', i === carIndex && hasNext);
+      });
+    }
+
+    // animate the car forward along the road to a target length
+    function driveTo(target: number): void {
+      const start = carLen;
+      const dist = Math.abs(target - start);
+      cancelAnimationFrame(raf);
+      if (reduce || dist < 1) {
+        place(target);
+        return;
+      }
+      const dur = Math.max(700, Math.min(2000, dist * 1.15));
+      const t0 = performance.now();
+      const ease = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+      const tick = (now: number) => {
+        const u = Math.min(1, (now - t0) / dur);
+        place(start + (target - start) * ease(u));
+        if (u < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
+    // reflect current progress; animate the drive only when asked
+    function applyProgress(animate: boolean): void {
+      const carIndex = currentCarIndex();
+      refreshStates(carIndex);
+      const target = lenForIndex(carIndex);
+      if (animate) driveTo(target);
+      else place(target);
+    }
+
+    function saveSeen(): void {
+      try { window.localStorage.setItem(SEEN_KEY, String(currentCarIndex())); } catch (e) {}
     }
 
     let rt: number | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(rt);
-      rt = window.setTimeout(layout, 120);
+      rt = window.setTimeout(layout, 120); // layout re-places the car instantly, no drive
     });
-    window.addEventListener('progress-changed', render);
-    window.addEventListener('storage', render);
+    window.addEventListener('progress-changed', () => { applyProgress(true); saveSeen(); });
+    window.addEventListener('storage', () => { applyProgress(true); saveSeen(); });
 
     function boot(): void {
-      layout();
+      layout(); // builds the road + places the car at the current sign instantly
+      // if you've made progress since last visiting the map, watch the car catch up
+      try {
+        const raw = window.localStorage.getItem(SEEN_KEY);
+        const seen = raw === null ? null : parseInt(raw, 10);
+        const carIndex = currentCarIndex();
+        if (seen !== null && !isNaN(seen) && seen < carIndex && !reduce) {
+          refreshStates(carIndex);
+          place(lenForIndex(seen)); // start from where the car was last seen
+          driveTo(lenForIndex(carIndex)); // and drive forward to now
+        }
+      } catch (e) {}
+      saveSeen();
     }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(boot);
@@ -269,7 +329,7 @@ const total = concepts.length;
     .sign.done .post { background: var(--chip); }
     .sign.done .board::after { content: '✓'; position: absolute; top: 4px; right: 8px; font-size: 12px; font-weight: 800; color: var(--chipink); }
 
-    #car { position: absolute; left: 0; top: 0; z-index: 3; width: 50px; height: 26px; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); pointer-events: none; }
+    #car { position: absolute; left: 0; top: 0; z-index: 3; width: 50px; height: 26px; pointer-events: none; }
     .car-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
     .car-body { fill: #f4b8cb; }
     .car-glass { fill: #17131b; opacity: 0.7; }

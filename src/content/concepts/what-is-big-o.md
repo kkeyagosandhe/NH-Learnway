@@ -1,5 +1,5 @@
 ---
-order: 8
+order: 10
 chapter: basics
 title: What is Big-O?
 gist: >-

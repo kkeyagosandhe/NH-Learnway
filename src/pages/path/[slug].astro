@@ -192,14 +192,22 @@ const ch = CHAPTERS[d.chapter];
       </div>
     </section>
 
-    {
-      d.ai && d.ai.length > 0 && (
-        <section class="sec">
-          <h3><span class="dot"></span>Using AI well</h3>
-          <ul class="bul">{d.ai.map((x) => <li>{x}</li>)}</ul>
-        </section>
-      )
-    }
+    <section class="sec">
+      <h3><span class="dot"></span>When you're stuck</h3>
+      <p class="lead">
+        Being stuck is the normal state of learning to code — not a sign you are failing.
+        Climb this ladder in order, on your own. No AI needed. (The full method is the
+        <a class="ilink" href="/path/getting-unstuck">Getting unstuck</a> lesson.)
+      </p>
+      <ol class="steps">
+        <li>Re-read <b>The picture</b> and <b>The click</b> above, slowly, out loud. Most "stuck" is a fuzzy idea, not a broken line.</li>
+        <li>If the code <b>errors</b>, read the <b>last line</b> of the red message — it names what went wrong and the line number.</li>
+        <li>If it <b>runs but is wrong</b>, add <code>print()</code> lines to see what your variables actually hold. The bug is where reality and what you expected first differ.</li>
+        <li>Trace a tiny input by hand on paper — be the computer for five lines.</li>
+        <li>Still stuck? Watch the free NeetCode video for this topic, or read the LeetCode editorial and discussion. Human explanations — never an AI writing it for you.</li>
+        <li>Then step away for ten minutes. The answer often arrives once you stop gripping.</li>
+      </ol>
+    </section>
 
     {
       d.practice && d.practice.length > 0 && (
@@ -229,6 +237,19 @@ const ch = CHAPTERS[d.chapter];
               ))}
             </table>
             {d.complexityNote && <p class="cxfoot">{d.complexityNote}</p>}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      d.resources && d.resources.length > 0 && (
+        <section class="sec">
+          <h3><span class="dot"></span>Where to go — free, no AI</h3>
+          <div class="chiplinks">
+            {d.resources.map((r) => (
+              <a href={r.url} target="_blank" rel="noopener">{r.label}</a>
+            ))}
           </div>
         </section>
       )
@@ -328,6 +349,9 @@ const ch = CHAPTERS[d.chapter];
     ol.steps li { position: relative; padding-left: 38px; font-size: 14.5px; line-height: 1.6; color: var(--ink-soft); }
     ol.steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--night); background: var(--hue); }
     ol.steps .do { display: block; margin-bottom: 4px; color: var(--ink); font-weight: 700; }
+    ol.steps li b { color: var(--ink); font-weight: 700; }
+    .lead .ilink { color: var(--hue); text-decoration: underline; text-underline-offset: 2px; }
+    .lead code, ol.steps li code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; background: #14101a; border: 1px solid var(--line-dim); border-radius: 5px; padding: 1px 5px; color: #f0dfe7; }
 
     .keepbox { margin-top: 14px; background: var(--night-2); border: 1px solid var(--line-dim); border-left: 3px solid var(--hue); border-radius: 12px; padding: 12px 15px; font-size: 14.5px; line-height: 1.6; color: var(--ink); }
     .keepbox .klab { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 5px; }

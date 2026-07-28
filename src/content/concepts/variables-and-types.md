@@ -1,5 +1,5 @@
 ---
-order: 2
+order: 4
 chapter: basics
 title: Variables & types
 gist: >-

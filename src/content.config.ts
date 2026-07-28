@@ -56,6 +56,9 @@ const concepts = defineCollection({
     practice: z
       .array(z.object({ label: z.string(), url: z.string().url() }))
       .optional(),
+    resources: z
+      .array(z.object({ label: z.string(), url: z.string().url() }))
+      .optional(), // trusted free, non-AI places to go
     complexity: z
       .array(z.object({ op: z.string(), val: z.string(), note: z.string().optional() }))
       .optional(),

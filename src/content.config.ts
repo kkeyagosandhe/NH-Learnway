@@ -12,16 +12,17 @@ import { glob } from 'astro/loaders';
 const concepts = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/concepts' }),
   schema: z.object({
-    order: z.number().int().min(1).max(18),
-    chapter: z.enum(['foundations', 'structures', 'techniques']),
+    order: z.number().int().min(1).max(40),
+    chapter: z.enum(['basics', 'foundations', 'structures', 'techniques']),
     title: z.string(),
+    gist: z.string().optional(), // the "start tiny" one-liner shown up top
 
     // --- the mental model ---
     picture: z.array(z.string()), // the vivid analogy
     origin: z.array(z.string()), // where it comes from / why it exists
     purpose: z.array(z.string()), // what you're going for
-    good: z.array(z.string()), // strong at
-    bad: z.array(z.string()), // watch out
+    good: z.array(z.string()).optional(), // strong at
+    bad: z.array(z.string()).optional(), // watch out
     click: z.array(z.string()), // the aha that ties it together
 
     // --- recognition + framing ---
@@ -36,11 +37,13 @@ const concepts = defineCollection({
     viz: z.enum(['hashmap']).optional(), // an interactive demo, where one fits
 
     // --- how to solve it ---
-    solve: z.object({
-      lead: z.string(),
-      steps: z.array(z.object({ do: z.string(), why: z.string() })),
-      keep: z.string(), // the invariant to hold true
-    }),
+    solve: z
+      .object({
+        lead: z.string(),
+        steps: z.array(z.object({ do: z.string(), why: z.string() })),
+        keep: z.string().optional(), // the invariant (DSA concepts); basics can omit
+      })
+      .optional(),
     code: z.string().optional(), // the worked solution (revealed, not spoiled)
 
     // --- build + practice + reference ---
@@ -50,7 +53,9 @@ const concepts = defineCollection({
       skills: z.array(z.string()),
       out: z.string(),
     }),
-    practice: z.array(z.object({ label: z.string(), url: z.string().url() })),
+    practice: z
+      .array(z.object({ label: z.string(), url: z.string().url() }))
+      .optional(),
     complexity: z
       .array(z.object({ op: z.string(), val: z.string(), note: z.string().optional() }))
       .optional(),

@@ -2,11 +2,13 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import HashViz from '../../components/HashViz.astro';
-import { CHAPTERS } from '../../data/chapters';
+import { CHAPTERS, CHAPTER_RANK } from '../../data/chapters';
 
 export async function getStaticPaths() {
   const all = (await getCollection('concepts')).sort(
-    (a, b) => a.data.order - b.data.order,
+    (a, b) =>
+      CHAPTER_RANK[a.data.chapter] - CHAPTER_RANK[b.data.chapter] ||
+      a.data.order - b.data.order,
   );
   return all.map((m, i) => ({
     params: { slug: m.id },
@@ -48,6 +50,15 @@ const ch = CHAPTERS[d.chapter];
       <h1>{d.title}</h1>
     </header>
 
+    {
+      d.gist && (
+        <div class="gist">
+          <span class="gist-lab">In plain words</span>
+          <p>{d.gist}</p>
+        </div>
+      )
+    }
+
     <section class="sec">
       <h3><span class="dot"></span>The picture</h3>
       <ul class="bul">{d.picture.map((x) => <li>{x}</li>)}</ul>
@@ -87,19 +98,27 @@ const ch = CHAPTERS[d.chapter];
       )
     }
 
-    <section class="sec">
-      <h3><span class="dot"></span>Good at, and not</h3>
-      <div class="twocol">
-        <div class="mini good">
-          <h4>Strong at</h4>
-          <ul class="bul">{d.good.map((x) => <li>{x}</li>)}</ul>
-        </div>
-        <div class="mini bad">
-          <h4>Watch out</h4>
-          <ul class="bul">{d.bad.map((x) => <li>{x}</li>)}</ul>
-        </div>
-      </div>
-    </section>
+    {
+      (d.good?.length || d.bad?.length) && (
+        <section class="sec">
+          <h3><span class="dot"></span>Good at, and not</h3>
+          <div class="twocol">
+            {d.good && d.good.length > 0 && (
+              <div class="mini good">
+                <h4>Strong at</h4>
+                <ul class="bul">{d.good.map((x) => <li>{x}</li>)}</ul>
+              </div>
+            )}
+            {d.bad && d.bad.length > 0 && (
+              <div class="mini bad">
+                <h4>Watch out</h4>
+                <ul class="bul">{d.bad.map((x) => <li>{x}</li>)}</ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )
+    }
 
     {
       d.prereqs && d.prereqs.length > 0 && (
@@ -134,16 +153,22 @@ const ch = CHAPTERS[d.chapter];
       </section>
     )}
 
-    <section class="sec">
-      <h3><span class="dot"></span>How to solve it</h3>
-      <p class="lead">{d.solve.lead}</p>
-      <ol class="steps">
-        {d.solve.steps.map((s) => (
-          <li><span class="do">{s.do}</span>{s.why}</li>
-        ))}
-      </ol>
-      <div class="keepbox"><div class="klab">Keep this true</div>{d.solve.keep}</div>
-    </section>
+    {
+      d.solve && (
+        <section class="sec">
+          <h3><span class="dot"></span>How to solve it</h3>
+          <p class="lead">{d.solve.lead}</p>
+          <ol class="steps">
+            {d.solve.steps.map((s) => (
+              <li><span class="do">{s.do}</span>{s.why}</li>
+            ))}
+          </ol>
+          {d.solve.keep && (
+            <div class="keepbox"><div class="klab">Keep this true</div>{d.solve.keep}</div>
+          )}
+        </section>
+      )
+    }
 
     {
       d.code && (
@@ -176,15 +201,19 @@ const ch = CHAPTERS[d.chapter];
       )
     }
 
-    <section class="sec">
-      <h3><span class="dot"></span>Two problems</h3>
-      <p class="lead">Only after it clicks. Both free on LeetCode.</p>
-      <div class="chiplinks">
-        {d.practice.map((p) => (
-          <a href={p.url} target="_blank" rel="noopener">{p.label}<span class="free">free</span></a>
-        ))}
-      </div>
-    </section>
+    {
+      d.practice && d.practice.length > 0 && (
+        <section class="sec">
+          <h3><span class="dot"></span>Two problems</h3>
+          <p class="lead">Only after it clicks. Both free on LeetCode.</p>
+          <div class="chiplinks">
+            {d.practice.map((p) => (
+              <a href={p.url} target="_blank" rel="noopener">{p.label}<span class="free">free</span></a>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
     {
       d.complexity && d.complexity.length > 0 && (
@@ -258,6 +287,10 @@ const ch = CHAPTERS[d.chapter];
     .eyebrow { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
     .badge { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; font-family: var(--display); font-weight: 600; font-size: 15px; }
     h1 { font-family: var(--display); font-weight: 600; font-size: 32px; line-height: 1.1; margin: 13px 0 4px; color: var(--ink); }
+
+    .gist { margin: 16px 0 4px; padding: 14px 16px; background: var(--night-2); border: 1px solid var(--line-dim); border-left: 3px solid var(--hue); border-radius: 12px; }
+    .gist-lab { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--hue); margin-bottom: 6px; }
+    .gist p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--ink); }
 
     .sec { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line-dim); }
     .sec h3 { font-family: var(--display); font-weight: 600; font-size: 19px; color: var(--ink); margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }

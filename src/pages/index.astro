@@ -1,10 +1,12 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import { CHAPTERS } from '../data/chapters';
+import { CHAPTERS, CHAPTER_RANK } from '../data/chapters';
 
 const milestones = (await getCollection('concepts')).sort(
-  (a, b) => a.data.order - b.data.order,
+  (a, b) =>
+    CHAPTER_RANK[a.data.chapter] - CHAPTER_RANK[b.data.chapter] ||
+    a.data.order - b.data.order,
 );
 const total = milestones.length;
 ---
@@ -21,9 +23,9 @@ const total = milestones.length;
       <svg id="wires" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="litGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#F4B8CB" />
-            <stop offset="0.34" stop-color="#F2C6A9" />
-            <stop offset="0.67" stop-color="#C7B9EC" />
+            <stop offset="0" stop-color="#F2C6A9" />
+            <stop offset="0.33" stop-color="#F4B8CB" />
+            <stop offset="0.66" stop-color="#C7B9EC" />
             <stop offset="1" stop-color="#A9D9C6" />
           </linearGradient>
         </defs>

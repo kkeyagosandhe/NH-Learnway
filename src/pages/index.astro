@@ -197,10 +197,15 @@ const total = concepts.length;
       roadLit.style.strokeDashoffset = String(total - L);
     }
 
-    function currentCarIndex(): number {
+    // The frontier: the furthest sign you have finished (where the car parks), and the
+    // next sign to glow. Nothing finished yet -> the car waits at the very first sign.
+    function frontier(): { car: number; next: number } {
       const done = loadDone();
-      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) === -1) return i;
-      return N - 1; // everything learned
+      let furthest = -1;
+      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) !== -1 && i > furthest) furthest = i;
+      const car = furthest < 0 ? 0 : furthest;
+      const next = furthest < 0 ? 0 : Math.min(furthest + 1, N - 1);
+      return { car, next };
     }
 
     function lenForIndex(i: number): number {
@@ -208,12 +213,13 @@ const total = concepts.length;
       return nearestLen(pos[i]);
     }
 
-    function refreshStates(carIndex: number): void {
+    function refreshStates(): void {
       const done = loadDone();
-      const hasNext = done.length < N;
+      const next = frontier().next;
       signs.forEach((s, i) => {
-        s.classList.toggle('done', done.indexOf(slugs[i]) !== -1);
-        s.classList.toggle('next', i === carIndex && hasNext);
+        const isDone = done.indexOf(slugs[i]) !== -1;
+        s.classList.toggle('done', isDone);
+        s.classList.toggle('next', i === next && !isDone);
       });
     }
 
@@ -239,23 +245,22 @@ const total = concepts.length;
 
     // reflect current progress; animate the drive only when asked
     function applyProgress(animate: boolean): void {
-      const carIndex = currentCarIndex();
-      refreshStates(carIndex);
-      const target = lenForIndex(carIndex);
+      refreshStates();
+      const target = lenForIndex(frontier().car);
       if (animate) driveTo(target);
       else place(target);
     }
 
     function saveSeen(): void {
-      try { window.localStorage.setItem(SEEN_KEY, String(currentCarIndex())); } catch (e) {}
+      try { window.localStorage.setItem(SEEN_KEY, String(frontier().car)); } catch (e) {}
     }
 
     // Reflect current progress, driving the car FROM the last-seen sign (or the very
     // start on a first visit) TO the current one — so returning after learning a
     // concept actually shows the car move.
     function catchUp(): void {
-      const carIndex = currentCarIndex();
-      refreshStates(carIndex);
+      const carIndex = frontier().car;
+      refreshStates();
       let seen: number | null = null;
       try {
         const raw = window.localStorage.getItem(SEEN_KEY);

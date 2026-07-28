@@ -1,6 +1,6 @@
 // A one-shot confetti burst on a shared full-screen canvas.
 // Ported from the original single-file version; respects reduced-motion.
-const PAL = ['#F5B841', '#34D9A8', '#46B4F0', '#B57BEE', '#FB7793', '#ECE8FA'];
+const PAL = ['#F4B8CB', '#F2C6A9', '#C7B9EC', '#A9D9C6', '#ECD9A0', '#EFE6EC'];
 
 interface Part {
   x: number; y: number; vx: number; vy: number;

@@ -2,70 +2,60 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
 /**
- * One milestone = one Markdown file in src/content/milestones/.
- * The frontmatter below is the whole lesson, broken into the parts we teach in:
- *   basics -> analogy -> usage -> language & logic.
- * Everything past `why` is optional: a habit milestone just fills the top,
- * a DSA milestone fills the whole thing. The template renders whatever exists.
+ * One concept = one Markdown file in src/content/concepts/.
+ * The frontmatter is the whole lesson, broken down in detail:
+ *   picture -> origin -> purpose -> cues -> good/bad -> the click ->
+ *   prerequisites -> the toolkit -> how to solve -> worked code ->
+ *   build -> using AI -> two problems -> complexity.
+ * 18 concepts, three chapters, no apps or streaks.
  */
-const milestones = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/milestones' }),
+const concepts = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/concepts' }),
   schema: z.object({
-    order: z.number().int().min(1).max(27), // position on the trail
-    chapter: z.enum(['c1', 'c2', 'c3', 'c4', 'c5', 'c6']),
+    order: z.number().int().min(1).max(18),
+    chapter: z.enum(['foundations', 'structures', 'techniques']),
     title: z.string(),
 
-    // --- always present: the summary the trail shows ---
-    do: z.string(), // the single concrete action
-    why: z.string(), // one line: why it matters
-    links: z
-      .array(z.object({ label: z.string(), url: z.string().url() }))
-      .default([]),
+    // --- the mental model ---
+    picture: z.array(z.string()), // the vivid analogy
+    origin: z.array(z.string()), // where it comes from / why it exists
+    purpose: z.array(z.string()), // what you're going for
+    good: z.array(z.string()), // strong at
+    bad: z.array(z.string()), // watch out
+    click: z.array(z.string()), // the aha that ties it together
 
-    // --- the "at a glance" chips ---
-    meta: z
-      .object({
-        interview: z.number().min(0).max(5).optional(), // dots
-        realWorld: z.number().min(0).max(5).optional(), // dots
-        time: z.string().optional(),
-        unlocks: z.string().optional(),
-        confidence: z.string().optional(), // "you'll know you've got it when..."
-      })
-      .optional(),
+    // --- recognition + framing ---
+    cues: z.array(z.string()).default([]), // "reach for it when the problem says..."
+    why: z.string().optional(), // why companies ask this
 
-    // --- 1. the basics: what problem this exists for ---
-    problem: z.string().optional(),
-
-    // --- 2. the analogy: the mental picture ---
-    analogy: z.string().optional(),
-    viz: z.enum(['hashmap']).optional(), // an interactive demo, if one fits
-
-    // --- intuition bridges the analogy into the real idea ---
-    intuition: z.string().optional(),
-
-    // --- 3. the usage: where it lives in real systems ---
-    real: z.array(z.string()).optional(),
-
-    // --- 4. the language & logic: how you actually write it ---
-    prereqs: z.array(z.string()).optional(), // what you should already know
+    // --- the language & logic (added depth) ---
+    prereqs: z.array(z.string()).optional(), // what to be comfortable with first
     toolkit: z
       .array(z.object({ code: z.string(), does: z.string() }))
       .optional(), // syntax -> what it does
-    walkthrough: z.array(z.string()).optional(), // the recipe, step by step
-    code: z.string().optional(), // the worked solution (revealed, not spoiled)
-    build: z.string().optional(), // a tiny thing to build yourself
+    viz: z.enum(['hashmap']).optional(), // an interactive demo, where one fits
 
-    // --- practice + wiring into the rest of the trail ---
-    interview: z.string().optional(),
-    practice: z
-      .array(z.object({ label: z.string(), url: z.string().url() }))
+    // --- how to solve it ---
+    solve: z.object({
+      lead: z.string(),
+      steps: z.array(z.object({ do: z.string(), why: z.string() })),
+      keep: z.string(), // the invariant to hold true
+    }),
+    code: z.string().optional(), // the worked solution (revealed, not spoiled)
+
+    // --- build + practice + reference ---
+    ai: z.array(z.string()).optional(), // using AI well
+    build: z.object({
+      blurb: z.string(),
+      skills: z.array(z.string()),
+      out: z.string(),
+    }),
+    practice: z.array(z.object({ label: z.string(), url: z.string().url() })),
+    complexity: z
+      .array(z.object({ op: z.string(), val: z.string(), note: z.string().optional() }))
       .optional(),
-    connects: z
-      .array(z.object({ label: z.string(), slug: z.string() }))
-      .optional(),
-    check: z.object({ q: z.string(), a: z.string() }).optional(), // reveal
-    reflect: z.string().optional(), // a prompt they answer in their own words
+    complexityNote: z.string().optional(),
   }),
 });
 
-export const collections = { milestones };
+export const collections = { concepts };

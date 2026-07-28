@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { CHAPTERS } from '../data/chapters';
 
-const milestones = (await getCollection('milestones')).sort(
+const milestones = (await getCollection('concepts')).sort(
   (a, b) => a.data.order - b.data.order,
 );
 const total = milestones.length;
@@ -12,20 +12,19 @@ const total = milestones.length;
 <Base title="NH-Learnway" total={total}>
   <main>
     <p class="lede">
-      A winding trail of <b>{total} milestones</b>. No dates, no daily quota. Tap a
-      checkpoint, do the thing, mark it lit. The trail fills as you climb. The only
-      rules: <b>one tiny rep a day</b>, <b>one active project</b>, <b>never miss twice</b>.
+      <b>{total} concepts</b>, in learning order. Tap one, read it slowly, and when it
+      clicks, do the tiny build and the two problems. No apps, no timers.
+      <b>One concept at a time.</b>
     </p>
 
     <div id="trail">
       <svg id="wires" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="litGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#F5B841" />
-            <stop offset="0.32" stop-color="#34D9A8" />
-            <stop offset="0.58" stop-color="#46B4F0" />
-            <stop offset="0.78" stop-color="#B57BEE" />
-            <stop offset="1" stop-color="#FB7793" />
+            <stop offset="0" stop-color="#F4B8CB" />
+            <stop offset="0.34" stop-color="#F2C6A9" />
+            <stop offset="0.67" stop-color="#C7B9EC" />
+            <stop offset="1" stop-color="#A9D9C6" />
           </linearGradient>
         </defs>
         <path id="wireDim" fill="none" stroke="var(--line-dim)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 12"></path>
@@ -314,7 +313,7 @@ const total = milestones.length;
       70% { transform: scale(1.5); opacity: 0; }
       100% { opacity: 0; }
     }
-    .check { width: 26px; height: 26px; stroke: #151024; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .check { width: 26px; height: 26px; stroke: #2c2028; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
     .caption {
       font-size: 13px;
       font-weight: 700;

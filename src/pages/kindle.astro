@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const total = (await getCollection('concepts')).length;
+
+const groups: { title: string; note?: string; items: [string, string, string][] }[] = [
+  {
+    title: 'Learn the patterns',
+    items: [
+      ['NeetCode — roadmap + free video walkthroughs', 'https://neetcode.io/roadmap', 'the core of this whole trail'],
+      ['NeetCode 150 — the curated list', 'https://neetcode.io/practice', 'pattern-grouped, all free'],
+      ["Sean Prashad — LeetCode Patterns", 'https://seanprashad.com/leetcode-patterns/', '179 problems grouped by pattern'],
+      ["Striver's A2Z DSA course (takeuforward)", 'https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2', 'a full free syllabus'],
+      ['Grind 75', 'https://www.techinterviewhandbook.org/grind75', 'a customisable Blind-75'],
+    ],
+  },
+  {
+    title: 'Practice problems',
+    items: [
+      ['LeetCode (free tier)', 'https://leetcode.com/', 'where you actually solve them'],
+      ['CSES Problem Set', 'https://cses.fi/problemset/', 'clean, topic-first, auto-graded'],
+    ],
+  },
+  {
+    title: 'Watch',
+    note: 'One video per topic is already linked inside each concept. These are the channels those come from, if you want more.',
+    items: [
+      ['NeetCode (YouTube)', 'https://www.youtube.com/@NeetCode', 'clear per-problem walkthroughs'],
+      ['Abdul Bari — Algorithms', 'https://www.youtube.com/@abdul_bari', 'the classic algorithm explainers'],
+      ['freeCodeCamp', 'https://www.youtube.com/@freecodecamp', 'long, free, full courses'],
+    ],
+  },
+  {
+    title: 'Visualise & reference',
+    items: [
+      ['VisuAlgo — algorithm animations', 'https://visualgo.net/en', 'watch structures move'],
+      ['The official Python tutorial', 'https://docs.python.org/3/tutorial/', 'the source of truth'],
+      ['GeeksforGeeks — Data Structures', 'https://www.geeksforgeeks.org/data-structures/', 'topic-wise reference'],
+    ],
+  },
+  {
+    title: 'More prep material',
+    items: [
+      ['Free placement-prep drive links', 'https://www.lets-code.co.in/articles/free-placement-google-drive-links/', 'the collection you shared'],
+    ],
+  },
+];
+---
+
+<Base title="Kindle here · NH-Learnway" total={total}>
+  <main>
+    <a href="/" class="back">← All concepts</a>
+    <div class="eyebrow">Everything here is free</div>
+    <h1>Kindle here</h1>
+
+    <p class="intro">
+      Every link below is <b>free to use</b> — no subscriptions, no paywalls, no AI needed.
+      Paid "shortcut" courses (Grokking, Design Gurus, Educative and the like) are left off on
+      purpose. This is everything you need to go from scratch to interview-ready, gathered in
+      one place so you never have to go looking.
+    </p>
+
+    {
+      groups.map((g) => (
+        <section class="group">
+          <h3>{g.title}</h3>
+          {g.note && <p class="gnote">{g.note}</p>}
+          <ul>
+            {g.items.map(([label, url, tag]) => (
+              <li>
+                <a href={url} target="_blank" rel="noopener">
+                  <span class="nm">{label}</span>
+                  <span class="tag">{tag}<span class="free">free</span></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </main>
+
+  <style>
+    main { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; padding: 28px 18px 100px; }
+    .back { text-decoration: none; color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+    .back:hover { color: var(--ink); }
+    .eyebrow { margin-top: 18px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; color: var(--butter); text-transform: uppercase; }
+    h1 { font-family: var(--display); font-weight: 600; font-size: 30px; margin: 5px 0 16px; color: var(--ink); }
+    .intro { font-size: 15px; line-height: 1.6; color: var(--ink-soft); background: var(--night-2); border: 1px solid var(--line-dim); border-radius: 12px; padding: 15px 17px; }
+    .intro b { color: var(--ink); }
+    .group h3 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 26px 0 4px; color: var(--butter); }
+    .gnote { font-size: 13px; color: var(--ink-faint); margin: 0 0 10px; line-height: 1.5; }
+    .group ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .group li a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      background: var(--night-2);
+      border: 1px solid var(--line-dim);
+      border-radius: 11px;
+      padding: 12px 15px;
+      transition: 0.15s;
+    }
+    .group li a:hover { background: var(--panel); transform: translateX(2px); }
+    .group .nm { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+    .group .tag { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-faint); font-weight: 600; white-space: nowrap; }
+    .group .free { font-size: 10px; font-weight: 800; color: #8fc7ad; background: rgba(169, 217, 198, 0.13); border-radius: 5px; padding: 2px 5px; }
+    @media (max-width: 520px) {
+      .group li a { flex-direction: column; align-items: flex-start; gap: 5px; }
+    }
+  </style>
+</Base>

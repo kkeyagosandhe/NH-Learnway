@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const total = (await getCollection('concepts')).length;
+
+// The recognition index: the SIGNAL a problem gives off -> the PATTERN to reach for.
+const rows: { cue: string; pattern: string; slug: string }[] = [
+  { cue: 'Ordered data you reach into by position; walk it once', pattern: 'Arrays', slug: 'arrays' },
+  { cue: '"Have I seen this?", counts, frequency, duplicates, group-by', pattern: 'Hash Maps', slug: 'hash-maps' },
+  { cue: 'Sorted array; find a pair or triplet; work from both ends; reverse in place', pattern: 'Two Pointers', slug: 'two-pointers' },
+  { cue: 'Longest / shortest / max / min CONTIGUOUS run; substring or subarray; "at most K"', pattern: 'Sliding Window', slug: 'sliding-window' },
+  { cue: 'Matching pairs, nesting, "most recent", undo, valid parentheses', pattern: 'Stack', slug: 'stack' },
+  { cue: 'Order of arrival; level-by-level; shortest path in an unweighted graph', pattern: 'Queue / BFS', slug: 'queue' },
+  { cue: 'Sorted + find a target or a boundary; "smallest / largest X such that…"; monotonic', pattern: 'Binary Search', slug: 'binary-search' },
+  { cue: 'Self-similar; a smaller copy of the problem inside it; try all options; divide and conquer', pattern: 'Recursion', slug: 'recursion' },
+  { cue: 'Reverse a list; detect a cycle; nth-from-end; no random access', pattern: 'Linked Lists', slug: 'linked-lists' },
+  { cue: 'Hierarchy; parent and child; traversal; root-to-leaf; level order', pattern: 'Trees', slug: 'trees' },
+  { cue: 'Prefix; "starts with"; autocomplete; a dictionary of words', pattern: 'Tries', slug: 'tries' },
+  { cue: 'Top K; Kth largest or smallest; "most / least urgent"; merge K; running median', pattern: 'Heaps', slug: 'heaps' },
+  { cue: 'Connections, networks, grids and mazes, dependencies; "are these connected?"; shortest path', pattern: 'Graphs (BFS / DFS)', slug: 'graphs' },
+  { cue: 'Generate ALL combinations / permutations / subsets; a valid arrangement; a puzzle', pattern: 'Backtracking', slug: 'backtracking' },
+  { cue: 'Count the ways; min or max cost; "can you reach"; overlapping subproblems', pattern: 'Dynamic Programming', slug: 'dynamic-programming' },
+  { cue: 'Take the best option right now; scheduling; fewest / most; a one-pass optimum', pattern: 'Greedy', slug: 'greedy' },
+  { cue: 'Start and end pairs; ranges; overlap; merge; "how many rooms"; a timeline', pattern: 'Intervals', slug: 'intervals' },
+  { cue: '"Appears twice except one"; do it with no extra memory; flags; powers of two', pattern: 'Bit Manipulation', slug: 'bit-manipulation' },
+];
+---
+
+<Base title="Pattern cheat-sheet · NH-Learnway" total={total}>
+  <main>
+    <a href="/" class="back">← All concepts</a>
+    <div class="eyebrow">Recognition, not memorisation</div>
+    <h1>The pattern cheat-sheet</h1>
+
+    <p class="intro">
+      This is the whole game. Most interview problems — even at the big product companies —
+      are one of these patterns wearing a disguise. The skill that separates a pass from a
+      fail is reading the <b>signal</b> and naming the <b>pattern</b> before you write a line.
+      Skim this before every practice session until the mapping is automatic. Then click through
+      to relearn the <i>why</i> — recognition only sticks on top of understanding.
+    </p>
+
+    <div class="grid">
+      {
+        rows.map((r) => (
+          <a class="row" href={`/path/${r.slug}`}>
+            <span class="cue">{r.cue}</span>
+            <span class="arrow">→</span>
+            <span class="pat">{r.pattern}</span>
+          </a>
+        ))
+      }
+    </div>
+  </main>
+
+  <style>
+    main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 28px 18px 100px; }
+    .back { text-decoration: none; color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+    .back:hover { color: var(--ink); }
+    .eyebrow { margin-top: 18px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; color: var(--pink); text-transform: uppercase; }
+    h1 { font-family: var(--display); font-weight: 600; font-size: 30px; margin: 5px 0 16px; color: var(--ink); }
+    .intro { font-size: 15px; line-height: 1.6; color: var(--ink-soft); background: var(--night-2); border: 1px solid var(--line-dim); border-radius: 12px; padding: 15px 17px; margin-bottom: 22px; }
+    .intro b { color: var(--ink); }
+
+    .grid { display: flex; flex-direction: column; gap: 8px; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto minmax(140px, 200px);
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      background: var(--night-2);
+      border: 1px solid var(--line-dim);
+      border-radius: 12px;
+      padding: 13px 16px;
+      transition: 0.15s;
+    }
+    .row:hover { background: var(--panel); transform: translateX(2px); border-color: var(--lav); }
+    .cue { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+    .arrow { color: var(--ink-faint); font-weight: 800; }
+    .pat { font-family: var(--display); font-weight: 600; font-size: 15.5px; color: var(--ink); text-align: right; }
+
+    @media (max-width: 620px) {
+      .row { grid-template-columns: 1fr; gap: 4px; padding: 12px 14px; }
+      .arrow { display: none; }
+      .pat { text-align: left; color: var(--lav); }
+    }
+  </style>
+</Base>

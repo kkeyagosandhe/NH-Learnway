@@ -54,8 +54,17 @@ const concepts = defineCollection({
       out: z.string(),
     }),
     practice: z
-      .array(z.object({ label: z.string(), url: z.string().url() }))
+      .array(
+        z.object({
+          label: z.string(),
+          url: z.string().url(),
+          star: z.boolean().optional(), // asked often at big companies
+        }),
+      )
       .optional(),
+    video: z
+      .object({ label: z.string(), url: z.string().url() })
+      .optional(), // ONE free video, watched after the reading
     resources: z
       .array(z.object({ label: z.string(), url: z.string().url() }))
       .optional(), // trusted free, non-AI places to go

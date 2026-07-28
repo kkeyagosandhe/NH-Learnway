@@ -192,6 +192,23 @@ const ch = CHAPTERS[d.chapter];
       </div>
     </section>
 
+    {
+      d.video && (
+        <section class="sec">
+          <h3><span class="dot"></span>Watch one video</h3>
+          <p class="lead">
+            Now that you have the idea, reinforce it with a single free walkthrough — not a
+            playlist, just this one.
+          </p>
+          <div class="chiplinks">
+            <a class="videolink" href={d.video.url} target="_blank" rel="noopener">
+              ▶ {d.video.label}<span class="free">free</span>
+            </a>
+          </div>
+        </section>
+      )
+    }
+
     <section class="sec">
       <h3><span class="dot"></span>When you're stuck</h3>
       <p class="lead">
@@ -212,11 +229,15 @@ const ch = CHAPTERS[d.chapter];
     {
       d.practice && d.practice.length > 0 && (
         <section class="sec">
-          <h3><span class="dot"></span>Two problems</h3>
-          <p class="lead">Only after it clicks. Both free on LeetCode.</p>
+          <h3><span class="dot"></span>Practice ladder</h3>
+          <p class="lead">Only after it clicks. All free on LeetCode. A ★ marks the ones asked most at big companies.</p>
+          <div class="nudge">
+            <p><b>Before you code —</b> say your whole approach out loud, in plain words, first.</p>
+            <p><b>Before you submit —</b> test the empty case, a single item, and a very large input.</p>
+          </div>
           <div class="chiplinks">
             {d.practice.map((p) => (
-              <a href={p.url} target="_blank" rel="noopener">{p.label}<span class="free">free</span></a>
+              <a href={p.url} target="_blank" rel="noopener">{p.star && <span class="star">★</span>}{p.label}<span class="free">free</span></a>
             ))}
           </div>
         </section>
@@ -372,6 +393,12 @@ const ch = CHAPTERS[d.chapter];
     .chiplinks a { display: flex; align-items: center; gap: 8px; text-decoration: none; border: 1px solid var(--line-dim); background: var(--night-2); color: var(--ink); font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 9px 13px; transition: 0.15s; }
     .chiplinks a:hover { background: var(--panel); transform: translateY(-1px); }
     .chiplinks a .free { font-size: 10px; font-weight: 800; color: #8fc7ad; background: rgba(169, 217, 198, 0.13); border-radius: 5px; padding: 2px 5px; }
+    .chiplinks a .star { color: var(--butter); margin-right: 3px; }
+    .videolink { border-color: var(--hue) !important; }
+    .nudge { background: var(--night-2); border: 1px solid var(--line-dim); border-left: 3px solid var(--hue); border-radius: 11px; padding: 11px 14px; margin-bottom: 12px; }
+    .nudge p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+    .nudge p + p { margin-top: 5px; }
+    .nudge b { color: var(--ink); font-weight: 700; }
 
     .cxcard { background: var(--night-2); border: 1px solid var(--line-dim); border-radius: 13px; padding: 4px 16px; }
     .cxtable { width: 100%; border-collapse: collapse; font-size: 14px; }

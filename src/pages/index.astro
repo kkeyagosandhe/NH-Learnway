@@ -3,67 +3,73 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { CHAPTERS, CHAPTER_RANK } from '../data/chapters';
 
-const milestones = (await getCollection('concepts')).sort(
+const concepts = (await getCollection('concepts')).sort(
   (a, b) =>
     CHAPTER_RANK[a.data.chapter] - CHAPTER_RANK[b.data.chapter] ||
     a.data.order - b.data.order,
 );
-const total = milestones.length;
+const total = concepts.length;
 ---
 
 <Base title="NH-Learnway" total={total}>
   <main>
     <p class="lede">
-      <b>{total} concepts</b>, in learning order. Tap one, read it slowly, and when it
-      clicks, do the tiny build and the two problems. No apps, no timers.
-      <b>One concept at a time.</b>
+      <b>{total} concepts</b>, in learning order — a road from your first line of code to
+      interview-ready. Drive up to a sign, learn the concept, mark it done, and the car
+      rolls on. No apps, no timers. <b>One stop at a time.</b>
     </p>
 
     <div id="trail">
-      <svg id="wires" preserveAspectRatio="none" aria-hidden="true">
+      <svg id="road" preserveAspectRatio="none" aria-hidden="true">
         <defs>
-          <linearGradient id="litGrad" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="litGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stop-color="#F2C6A9" />
             <stop offset="0.33" stop-color="#F4B8CB" />
             <stop offset="0.66" stop-color="#C7B9EC" />
             <stop offset="1" stop-color="#A9D9C6" />
           </linearGradient>
         </defs>
-        <path id="wireDim" fill="none" stroke="var(--line-dim)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 12"></path>
-        <path id="wireLit" fill="none" stroke="url(#litGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path id="roadEdge" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path id="roadFill" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path id="roadLine" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path id="roadLit" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
 
       {
-        milestones.map((m, i) => {
+        concepts.map((m, i) => {
           const ch = CHAPTERS[m.data.chapter];
-          const isChapterStart = i === 0 || milestones[i - 1].data.chapter !== m.data.chapter;
+          const isChapterStart = i === 0 || concepts[i - 1].data.chapter !== m.data.chapter;
           return (
-            <div class="row">
-              {isChapterStart && (
-                <div class="chapter-flag" style={`--chip:${ch.chip};--chip-ink:${ch.ink}`}>
-                  <span class="num">{ch.n}</span>
-                  <span class="nm">{ch.name}</span>
-                  <span class="tg">{ch.tag}</span>
-                </div>
-              )}
-              <div class="node-wrap" data-slug={m.id}>
-                <a
-                  class="node"
-                  href={`/path/${m.id}`}
-                  style={`--hue:${ch.hue}`}
-                  data-i={i}
-                  data-slug={m.id}
-                  aria-label={m.data.title}
-                >
-                  <span class="ring" />
-                  <span class="lbl">{i + 1}</span>
-                </a>
-                <div class="caption">{m.data.title}</div>
-              </div>
-            </div>
+            <a
+              class="sign"
+              href={`/path/${m.id}`}
+              data-i={i}
+              data-slug={m.id}
+              aria-label={m.data.title}
+              style={`--hue:${ch.hue};--chip:${ch.chip};--chipink:${ch.ink}`}
+            >
+              {isChapterStart && <span class="chap">{ch.n} · {ch.name}</span>}
+              <span class="board">
+                <span class="num">{i + 1}</span>
+                <span class="nm">{m.data.title}</span>
+              </span>
+              <span class="post"></span>
+            </a>
           );
         })
       }
+
+      <div id="car" aria-hidden="true">
+        <svg viewBox="0 0 50 26" class="car-svg">
+          <path
+            class="car-body"
+            d="M2 17 Q2 12 8 11 L15 6 Q17 5 21 5 L33 5 Q37 5 40 9 L45 12 Q48 13 48 17 L48 19 Q48 21 46 21 L4 21 Q2 21 2 19 Z"
+          />
+          <path class="car-glass" d="M17 8 L20 8 L20 11 L14 11 Z M23 8 L33 8 Q35 8 37 11 L23 11 Z" />
+          <circle class="wheel" cx="15" cy="21" r="4" />
+          <circle class="wheel" cx="38" cy="21" r="4" />
+        </svg>
+      </div>
     </div>
   </main>
 
@@ -71,265 +77,211 @@ const total = milestones.length;
     import { loadDone } from '../scripts/progress';
 
     const trail = document.getElementById('trail')!;
-    const svg = document.getElementById('wires') as unknown as SVGSVGElement;
-    const dimP = document.getElementById('wireDim') as unknown as SVGPathElement;
-    const litP = document.getElementById('wireLit') as unknown as SVGPathElement;
-    const nodes = Array.from(trail.querySelectorAll<HTMLAnchorElement>('.node'));
-    const wraps = Array.from(trail.querySelectorAll<HTMLElement>('.node-wrap'));
-    const slugs = nodes.map((n) => n.dataset.slug!);
-    const TOTAL = nodes.length;
+    const svg = document.getElementById('road') as unknown as SVGSVGElement;
+    const roadEdge = document.getElementById('roadEdge') as unknown as SVGPathElement;
+    const roadFill = document.getElementById('roadFill') as unknown as SVGPathElement;
+    const roadLine = document.getElementById('roadLine') as unknown as SVGPathElement;
+    const roadLit = document.getElementById('roadLit') as unknown as SVGPathElement;
+    const car = document.getElementById('car')!;
+    const signs = Array.from(trail.querySelectorAll<HTMLAnchorElement>('.sign'));
+    const slugs = signs.map((s) => s.dataset.slug!);
+    const N = signs.length;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function amp(): number {
-      return trail.clientWidth < 520 ? 0.3 : 0.4;
-    }
-    function wrapW(): number {
-      return trail.clientWidth < 560 ? 120 : 150;
+    type Pos = { x: number; y: number; dir: 1 | -1 };
+    let pos: Pos[] = [];
+
+    function perRow(w: number): number {
+      if (w >= 780) return 4;
+      if (w >= 520) return 3;
+      return 2;
     }
 
     function layout(): void {
-      const a = amp();
-      const ww = wrapW();
-      wraps.forEach((wrap, i) => {
-        const x = 0.5 + a * Math.sin(i * 0.92);
-        wrap.style.marginLeft = 'calc(' + x.toFixed(4) + ' * (100% - ' + ww + 'px))';
-      });
-      drawWires();
-    }
-
-    function centers() {
-      const base = trail.getBoundingClientRect();
-      return nodes.map((n) => {
-        const r = n.getBoundingClientRect();
-        return { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
-      });
-    }
-
-    function smooth(pts: { x: number; y: number }[]): string {
-      if (pts.length < 2) return '';
-      let d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
-      for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[i - 1] || pts[i];
-        const p1 = pts[i];
-        const p2 = pts[i + 1];
-        const p3 = pts[i + 2] || p2;
-        const c1x = p1.x + (p2.x - p0.x) / 6;
-        const c1y = p1.y + (p2.y - p0.y) / 6;
-        const c2x = p2.x - (p3.x - p1.x) / 6;
-        const c2y = p2.y - (p3.y - p1.y) / 6;
-        d += ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ' ' + p2.x.toFixed(1) + ' ' + p2.y.toFixed(1);
-      }
-      return d;
-    }
-
-    function furthestDone(done: string[]): number {
-      let m = -1;
-      slugs.forEach((s, i) => {
-        if (done.indexOf(s) !== -1 && i > m) m = i;
-      });
-      return m;
-    }
-
-    function drawWires(): void {
       const W = trail.clientWidth;
-      const H = trail.clientHeight;
-      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      const cols = perRow(W);
+      const rowGap = W < 520 ? 150 : 168;
+      const R = rowGap / 2; // hairpin radius
+      const padTop = 128; // room for signs (which sit above the road) + chapter label
+      const sidePad = 26;
+      const xL = R + sidePad;
+      const xR = W - R - sidePad;
+      const step = cols > 1 ? (xR - xL) / (cols - 1) : 0;
+      const rows = Math.ceil(N / cols);
+      const Y = (r: number) => padTop + r * rowGap;
+
+      pos = [];
+      for (let i = 0; i < N; i++) {
+        const r = Math.floor(i / cols);
+        const k = i % cols;
+        const goingRight = r % 2 === 0;
+        const col = goingRight ? k : cols - 1 - k;
+        pos.push({ x: xL + col * step, y: Y(r), dir: goingRight ? 1 : -1 });
+      }
+
+      // position the signs
+      signs.forEach((s, i) => {
+        s.style.left = pos[i].x + 'px';
+        s.style.top = pos[i].y + 'px';
+      });
+
+      // build the serpentine road path
+      let d = `M ${xL.toFixed(1)} ${Y(0).toFixed(1)}`;
+      for (let r = 0; r < rows; r++) {
+        const yy = Y(r);
+        const goingRight = r % 2 === 0;
+        const fullEndX = goingRight ? xR : xL;
+        const isLast = r === rows - 1;
+        // trim the final row to the last sign
+        const endX = isLast ? pos[N - 1].x : fullEndX;
+        d += ` L ${endX.toFixed(1)} ${yy.toFixed(1)}`;
+        if (!isLast) {
+          const yn = Y(r + 1);
+          const sweep = goingRight ? 1 : 0;
+          d += ` A ${R.toFixed(1)} ${R.toFixed(1)} 0 0 ${sweep} ${fullEndX.toFixed(1)} ${yn.toFixed(1)}`;
+        }
+      }
+
+      const H = Y(rows - 1) + 70;
+      trail.style.height = H + 'px';
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       svg.setAttribute('width', String(W));
       svg.setAttribute('height', String(H));
-      const d = smooth(centers());
-      dimP.setAttribute('d', d);
-      litP.setAttribute('d', d);
-      const len = litP.getTotalLength ? litP.getTotalLength() : 1000;
-      const f = furthestDone(loadDone());
-      const frac = f <= 0 ? 0 : f / (TOTAL - 1);
-      litP.style.strokeDasharray = String(len);
-      litP.style.transition = 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)';
-      litP.style.strokeDashoffset = String(len * (1 - frac));
+      [roadEdge, roadFill, roadLine, roadLit].forEach((p) => p.setAttribute('d', d));
+
+      render();
     }
 
-    function nextIndex(done: string[]): number {
-      for (let i = 0; i < TOTAL; i++) {
-        if (done.indexOf(slugs[i]) === -1) return i;
-      }
-      return -1;
-    }
-
-    const CHECK = '<svg class="check" viewBox="0 0 24 24"><path d="M4 12.5 L10 18 L20 6"/></svg>';
-
-    function refreshNodes(): void {
-      const done = loadDone();
-      const nx = nextIndex(done);
-      const anyDone = furthestDone(done) >= 0;
-      nodes.forEach((b, i) => {
-        const wrap = wraps[i];
-        b.classList.remove('done', 'next');
-        wrap.classList.remove('is-done');
-        wrap.querySelector('.pin')?.remove();
-        const lbl = b.querySelector('.lbl')!;
-        if (done.indexOf(slugs[i]) !== -1) {
-          b.classList.add('done');
-          wrap.classList.add('is-done');
-          lbl.innerHTML = CHECK;
-        } else {
-          lbl.textContent = String(i + 1);
-          if (i === nx) {
-            b.classList.add('next');
-            const pin = document.createElement('div');
-            pin.className = 'pin';
-            pin.textContent = anyDone ? 'you are here' : 'start here';
-            wrap.appendChild(pin);
-          }
+    function nearestLen(pt: { x: number; y: number }): number {
+      const total = roadEdge.getTotalLength ? roadEdge.getTotalLength() : 0;
+      if (!total) return 0;
+      let best = 0;
+      let bestD = Infinity;
+      const steps = 260;
+      for (let s = 0; s <= steps; s++) {
+        const l = (total * s) / steps;
+        const p = roadEdge.getPointAtLength(l);
+        const dx = p.x - pt.x;
+        const dy = p.y - pt.y;
+        const dd = dx * dx + dy * dy;
+        if (dd < bestD) {
+          bestD = dd;
+          best = l;
         }
-      });
+      }
+      return best;
     }
 
     function render(): void {
-      refreshNodes();
-      drawWires();
+      const done = loadDone();
+      // furthest completed index, and the next one to do
+      let furthest = -1;
+      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) !== -1 && i > furthest) furthest = i;
+      let next = -1;
+      for (let i = 0; i < N; i++) if (done.indexOf(slugs[i]) === -1) { next = i; break; }
+      const carIndex = next === -1 ? N - 1 : next;
+
+      signs.forEach((s, i) => {
+        const isDone = done.indexOf(slugs[i]) !== -1;
+        s.classList.toggle('done', isDone);
+        s.classList.toggle('next', i === carIndex && next !== -1);
+      });
+
+      // drive the car to its sign
+      const p = pos[carIndex];
+      if (p) {
+        car.style.transform =
+          `translate(${p.x}px, ${p.y}px) translate(-50%, -50%) scaleX(${p.dir})`;
+      }
+
+      // light the road up to the car
+      const total = roadLit.getTotalLength ? roadLit.getTotalLength() : 0;
+      const litLen = furthest < 0 ? 0 : nearestLen(pos[carIndex]);
+      roadLit.style.strokeDasharray = String(total);
+      roadLit.style.transition = reduce ? 'none' : 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)';
+      roadLit.style.strokeDashoffset = String(total - litLen);
     }
 
     let rt: number | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(rt);
-      rt = window.setTimeout(() => layout(), 120);
+      rt = window.setTimeout(layout, 120);
     });
     window.addEventListener('progress-changed', render);
     window.addEventListener('storage', render);
 
     function boot(): void {
       layout();
-      render();
     }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(boot);
-      setTimeout(boot, 400);
+      setTimeout(boot, 450);
     } else {
       boot();
     }
   </script>
 
   <style>
-    main {
-      position: relative;
-      z-index: 1;
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 36px 16px 120px;
-    }
-    .lede {
-      text-align: center;
-      margin: 6px auto 30px;
-      max-width: 520px;
-      color: var(--ink-soft);
-      font-size: 15px;
-      line-height: 1.5;
-    }
-    .lede b { color: var(--ink); font-weight: 800; }
+    main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 34px 16px 120px; }
+    .lede { text-align: center; margin: 6px auto 26px; max-width: 560px; color: var(--ink-soft); font-size: 15px; line-height: 1.55; }
+    .lede b { color: var(--ink); font-weight: 700; }
+
     #trail { position: relative; width: 100%; }
-    #wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    #road { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    /* hollow, outlined road (two edges), then a faint centre line, then the lit stretch */
+    #roadEdge { stroke: rgba(190, 178, 196, 0.16); stroke-width: 26; }
+    #roadFill { stroke: var(--night); stroke-width: 22; }
+    #roadLine { stroke: rgba(190, 178, 196, 0.18); stroke-width: 2; stroke-dasharray: 1 15; }
+    #roadLit { stroke: url(#litGrad); stroke-width: 3.5; opacity: 0.9; }
 
-    .row { position: relative; height: var(--gap); display: flex; align-items: center; z-index: 2; }
-    .chapter-flag {
-      position: absolute;
-      top: -6px;
-      left: 0;
-      transform: translateY(-100%);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .chapter-flag .num {
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--chip-ink, #151024);
-      background: var(--chip, #fff);
-      border-radius: 8px;
-      padding: 3px 8px;
-      line-height: 1;
-    }
-    .chapter-flag .nm { font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--ink); }
-    .chapter-flag .tg { font-size: 12px; color: var(--ink-faint); font-weight: 700; }
-
-    .node-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; }
-    .pin {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      color: #151024;
-      background: var(--ink);
-      padding: 3px 8px;
-      border-radius: 8px;
-      white-space: nowrap;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
-    }
-    .pin::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%) rotate(45deg);
-      width: 9px;
-      height: 9px;
-      background: var(--ink);
-    }
-    .node {
-      width: var(--node);
-      height: var(--node);
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
+    .sign { position: absolute; z-index: 2; text-decoration: none; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; width: 150px; }
+    .chap { position: absolute; top: -22px; white-space: nowrap; font-family: var(--display); font-weight: 600; font-size: 12.5px; color: var(--ink-faint); }
+    .board {
       position: relative;
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: 20px;
-      border: 0;
-      padding: 0;
-      text-decoration: none;
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
-      background: var(--trail-dim);
-      color: var(--ink-faint);
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+      width: 100%;
+      min-height: 52px;
+      border-radius: 13px;
+      border: 1.5px solid rgba(190, 178, 196, 0.28);
+      background: rgba(31, 25, 38, 0.6);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 9px 10px;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s, background 0.25s, box-shadow 0.25s;
     }
-    .node:hover { transform: translateY(-4px) scale(1.04); }
-    .node:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-    .node .ring { position: absolute; inset: -6px; border-radius: 50%; border: 2px solid transparent; transition: 0.25s; }
-    .node.done {
-      color: #151024;
-      background: radial-gradient(circle at 30% 28%, #fff6, transparent 55%), var(--hue);
-      box-shadow: 0 10px 26px -6px var(--hue), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
-    }
-    .node.next {
-      background: var(--night-2);
-      color: var(--ink);
-      box-shadow: inset 0 0 0 2px var(--hue), 0 0 0 0 var(--hue);
-    }
-    .node.next .ring { border-color: var(--hue); animation: pulse 1.9s ease-out infinite; }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 0.9; }
-      70% { transform: scale(1.5); opacity: 0; }
-      100% { opacity: 0; }
-    }
-    .check { width: 26px; height: 26px; stroke: #2c2028; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .caption {
-      font-size: 13px;
-      font-weight: 700;
-      text-align: center;
-      max-width: 100%;
-      line-height: 1.25;
-      color: var(--ink-soft);
-    }
-    .node-wrap.is-done .caption { color: var(--ink); }
+    .board .num { font-family: var(--display); font-weight: 600; font-size: 11px; color: var(--ink-faint); }
+    .board .nm { font-family: var(--display); font-weight: 500; font-size: 13.5px; line-height: 1.15; color: var(--ink-soft); text-align: center; }
+    .post { width: 2px; height: 30px; background: rgba(190, 178, 196, 0.22); }
 
-    @media (max-width: 560px) {
-      .node-wrap { width: 120px; }
-      .caption { font-size: 12px; }
-      .chapter-flag .nm { font-size: 15px; }
+    .sign:hover .board { transform: translateY(-3px); border-color: var(--hue); }
+    .sign:focus-visible .board { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+    .sign.next .board { border-color: var(--hue); background: rgba(31, 25, 38, 0.9); box-shadow: 0 0 0 4px color-mix(in srgb, var(--hue) 18%, transparent), 0 10px 26px -10px var(--hue); }
+    .sign.next .board .nm { color: var(--ink); }
+    .sign.next .post { background: var(--hue); }
+
+    .sign.done .board { border-color: transparent; background: var(--chip); box-shadow: 0 8px 22px -10px var(--chip); }
+    .sign.done .board .num { color: color-mix(in srgb, var(--chipink) 70%, transparent); }
+    .sign.done .board .nm { color: var(--chipink); }
+    .sign.done .post { background: var(--chip); }
+    .sign.done .board::after { content: '✓'; position: absolute; top: 4px; right: 8px; font-size: 12px; font-weight: 800; color: var(--chipink); }
+
+    #car { position: absolute; left: 0; top: 0; z-index: 3; width: 50px; height: 26px; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); pointer-events: none; }
+    .car-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+    .car-body { fill: #f4b8cb; }
+    .car-glass { fill: #17131b; opacity: 0.7; }
+    .wheel { fill: #2c2028; stroke: #f4b8cb; stroke-width: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #car, .board { transition: none; }
+    }
+    @media (max-width: 520px) {
+      .sign { width: 118px; }
+      .board .nm { font-size: 12px; }
+      .chap { font-size: 11px; }
     }
   </style>
 </Base>
